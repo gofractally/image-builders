@@ -75,8 +75,8 @@ RUN cd /root \
     && curl --proto '=https' --tlsv1.2 -sSf -o rustup.sh https://sh.rustup.rs \
     && chmod 700 rustup.sh \
     && ./rustup.sh -y --no-modify-path \
-    && rustup toolchain install beta \
-    && rustup default beta \
+    && /opt/cargo/bin/rustup toolchain install beta \
+    && /opt/cargo/bin/rustup default beta \
     && /opt/cargo/bin/rustup target add wasm32-wasi \
     && /opt/cargo/bin/cargo install mdbook mdbook-linkcheck mdbook-mermaid sccache  \
     && chmod -R 777 $RUSTUP_HOME \
