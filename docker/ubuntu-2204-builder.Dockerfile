@@ -10,18 +10,14 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         build-essential         \
         ccache                  \
         clang                   \
-        clang++                 \
         cmake                   \
         curl                    \
-        g++                     \
-        gcc                     \
         git                     \
         libcurl4-openssl-dev    \
         libgbm-dev              \
         libgmp-dev              \
         libnss3-dev             \
         libssl-dev              \
-        libstdc++-11-dev        \
         libtool                 \
         libusb-1.0-0-dev        \
         libzstd-dev             \
