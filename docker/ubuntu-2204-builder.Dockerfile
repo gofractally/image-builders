@@ -3,7 +3,6 @@ FROM ubuntu:jammy
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get install -yq software-properties-common \
-    && add-apt-repository -y ppa:ubuntu-toolchain-r/test \
     && apt-get update \
     && apt-get install -yq      \
         autoconf                \
