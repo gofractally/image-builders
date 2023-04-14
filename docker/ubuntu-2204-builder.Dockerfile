@@ -21,6 +21,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         libtool                 \
         libusb-1.0-0-dev        \
         libzstd-dev             \
+        llvm                    \
         pkg-config              \
         zstd                    \
     && apt-get clean -yq \
