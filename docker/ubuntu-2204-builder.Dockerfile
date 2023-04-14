@@ -13,6 +13,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         cmake                   \
         curl                    \
         git                     \
+        libclang-dev            \
         libcurl4-openssl-dev    \
         libgbm-dev              \
         libgmp-dev              \
