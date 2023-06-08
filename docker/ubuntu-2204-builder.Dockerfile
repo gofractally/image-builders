@@ -39,8 +39,8 @@ RUN cd /root \
     && rm -rf boost*
 
 RUN cd /opt \
-    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-17/wasi-sdk-17.0-linux.tar.gz \
-    && tar xf wasi-sdk-17.0-linux.tar.gz \
+    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-19/wasi-sdk-19.0-linux.tar.gz \
+    && tar xf wasi-sdk-19.0-linux.tar.gz \
     && curl -LO https://nodejs.org/dist/v16.17.0/node-v16.17.0-linux-x64.tar.xz \
     && tar xf node-v16.17.0-linux-x64.tar.xz \
     && rm *.tar.* \
@@ -60,5 +60,5 @@ RUN cd /root \
     && chmod -R 777 $CARGO_HOME \
     && rm rustup.sh
 
-ENV WASI_SDK_PREFIX=/opt/wasi-sdk-17.0
+ENV WASI_SDK_PREFIX=/opt/wasi-sdk-19.0
 ENV PATH=/opt/cargo/bin:/opt/node-v16.17.0-linux-x64/bin:$PATH
