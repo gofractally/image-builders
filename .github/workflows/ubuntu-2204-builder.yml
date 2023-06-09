@@ -1,4 +1,4 @@
-name: ubuntu-2204-builder container
+name: Generate psibase-builder-ubuntu-2204 image
 
 on:
   workflow_dispatch:
@@ -17,7 +17,7 @@ on:
 
 jobs:
   ubuntu-2204-builder:
-    name: internal-ubuntu-2204-builder
+    name: psibase-builder-ubuntu-2204
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -30,7 +30,7 @@ jobs:
         id: prep
         run: |
           REGISTRY="ghcr.io"
-          IMAGE="${REGISTRY}/${{ github.repository_owner }}/internal-ubuntu-2204-builder"
+          IMAGE="${REGISTRY}/${{ github.repository_owner }}/psibase-builder-ubuntu-2204"
           TAGS="${IMAGE}:${{ github.sha }}"
           echo ::set-output name=tags::${TAGS,,}
 
