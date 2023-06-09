@@ -7,7 +7,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get install -yq      \
         autoconf                \
-        binaryen                \
         build-essential         \
         cmake                   \
         curl                    \
@@ -67,6 +66,12 @@ RUN cd /opt \
     && export PATH="/opt/node-v16.17.0-linux-x64/bin:$PATH" \
     && npm i -g yarn
 
+RUN cd /opt \
+    && curl -LO https://github.com/WebAssembly/binaryen/releases/download/version_113/binaryen-version_113-x86_64-linux.tar.gz \
+    && echo a70f8643b17029da05f437c8939e4c388a09aa6bcd53156c58038161828bfab4  binaryen-version_113-x86_64-linux.tar.gz > binaryen-version_113-x86_64-linux.tar.gz.sha256 \
+    && sha256sum -c binaryen-version_113-x86_64-linux.tar.gz.sha256 \
+    && tar xf binaryen-version_113-x86_64-linux.tar.gz
+
 ENV RUSTUP_HOME=/opt/rustup
 ENV CARGO_HOME=/opt/cargo
 
@@ -81,4 +86,4 @@ RUN cd /root \
     && rm rustup.sh
 
 ENV WASI_SDK_PREFIX=/opt/wasi-sdk-19.0
-ENV PATH=/opt/cargo/bin:/opt/node-v16.17.0-linux-x64/bin:/opt/clang+llvm-14.0.0-x86_64-linux-gnu-ubuntu-18.04/bin:$PATH
+ENV PATH=/opt/cargo/bin:/opt/node-v16.17.0-linux-x64/bin:/opt/clang+llvm-14.0.0-x86_64-linux-gnu-ubuntu-18.04/bin:/opt/binaryen-version_113/bin/:$PATH
