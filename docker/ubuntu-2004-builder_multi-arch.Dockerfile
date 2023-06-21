@@ -52,27 +52,28 @@ RUN cd /root \
     && cd /root \
     && rm -rf boost*
 
-# https://github.com/llvm/llvm-project/releases/tag/llvmorg-14.0.0
+# https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.6
+# (Clang V15.0.7 is the version of clang found in wasi sdk 19)
 ARG TARGETARCH
 RUN <<EOT bash
     set -eux
     if [ "amd64" = "$TARGETARCH" ]; then
-        export CLANGPATH=clang+llvm-14.0.0-x86_64-linux-gnu-ubuntu-18.04
+        export CLANGPATH=clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04
     elif [ "arm64" = "$TARGETARCH" ]; then
-        export CLANGPATH=clang+llvm-14.0.0-aarch64-linux-gnu
+        export CLANGPATH=clang+llvm-15.0.6-aarch64-linux-gnu
     fi
 
     cd /opt
-    curl -LO https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.0/\$CLANGPATH.tar.xz
+    curl -LO https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/\$CLANGPATH.tar.xz
     tar xf \$CLANGPATH.tar.xz
     rm \$CLANGPATH.tar.xz
-    mv \$CLANGPATH clang+llvm-14.0.0
+    mv \$CLANGPATH clang+llvm-15.0.6
 EOT
 
 # https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-19
-ENV WASI_SDK_PREFIX=/opt/clang+llvm-14.0.0
+ENV WASI_SDK_PREFIX=/opt/clang+llvm-15.0.6
 ENV PATH=${WASI_SDK_PREFIX}/bin:$PATH
-RUN cd ${WASI_SDK_PREFIX}/lib/clang/14.0.0/ \
+RUN cd ${WASI_SDK_PREFIX}/lib/clang/15.0.6/ \
     && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-19/libclang_rt.builtins-wasm32-wasi-19.0.tar.gz \
     && tar xf libclang_rt.builtins-wasm32-wasi-19.0.tar.gz      \
     && rm libclang_rt.builtins-wasm32-wasi-19.0.tar.gz          \
