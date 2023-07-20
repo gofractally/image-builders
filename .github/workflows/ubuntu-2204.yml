@@ -1,4 +1,4 @@
-name: Generate psibase-builder-ubuntu-2004 image
+name: Generate psibase-builder-ubuntu-2204 image
 
 on:
   workflow_dispatch:
@@ -7,17 +7,17 @@ on:
       - main
       - "release/*"
     paths:
-      - "docker/ubuntu-builder/ubuntu-2004-builder.Dockerfile"
-      - ".github/workflows/ubuntu-2004-builder.yml"
+      - "docker/ubuntu-2204-builder.Dockerfile"
+      - ".github/workflows/ubuntu-2204.yml"
   pull_request:
     types: [assigned, opened, synchronize, reopened, labeled]
     paths:
-      - "docker/ubuntu-builder/ubuntu-2004-builder.Dockerfile"
-      - ".github/workflows/ubuntu-2004-builder.yml"
+      - "docker/ubuntu-2204-builder.Dockerfile"
+      - ".github/workflows/ubuntu-2204.yml"
 
 jobs:
-  ubuntu-2004-builder:
-    name: psibase-builder-ubuntu-2004
+  ubuntu-2204-builder:
+    name: psibase-builder-ubuntu-2204
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -30,7 +30,7 @@ jobs:
         id: prep
         run: |
           REGISTRY="ghcr.io"
-          IMAGE="${REGISTRY}/${{ github.repository_owner }}/psibase-builder-ubuntu-2004"
+          IMAGE="${REGISTRY}/${{ github.repository_owner }}/psibase-builder-ubuntu-2204"
           TAGS="${IMAGE}:${{ github.sha }}"
           echo ::set-output name=tags::${TAGS,,}
 
@@ -60,7 +60,7 @@ jobs:
         with:
           context: .
           push: true
-          file: docker/ubuntu-builder/ubuntu-2004-builder.Dockerfile
+          file: docker/ubuntu-2204-builder.Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
           platforms: linux/amd64,linux/arm64
-          outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase build environment based on Ubuntu 20.04 (image support for arm64 and amd64)
+          outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase build environment based on Ubuntu 22.04 (image support for arm64 and amd64)
