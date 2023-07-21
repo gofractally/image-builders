@@ -41,7 +41,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
-          platforms: 'arm64,arm'
+          platforms: 'arm64'
 
       - name: Docker Buildx setup
         uses: docker/setup-buildx-action@v2
@@ -67,6 +67,7 @@ jobs:
   ubuntu-2204-builder_arm:
     name: psibase-builder-ubuntu-2204_arm
     runs-on: ubuntu-latest
+    timeout-minutes: 600
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -89,7 +90,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
-          platforms: 'arm64,arm'
+          platforms: 'arm64'
 
       - name: Docker Buildx setup
         uses: docker/setup-buildx-action@v2
