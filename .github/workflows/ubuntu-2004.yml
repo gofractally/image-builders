@@ -38,10 +38,10 @@ jobs:
         id: showtag
         run: echo ${{ steps.prep.outputs.tags }}
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: 'arm64,arm'
+#      - name: Set up QEMU
+#        uses: docker/setup-qemu-action@v2
+#        with:
+#          platforms: 'arm64'
 
       - name: Docker Buildx setup
         uses: docker/setup-buildx-action@v2
@@ -62,5 +62,6 @@ jobs:
           push: true
           file: docker/ubuntu-2004-builder.Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
-          platforms: linux/amd64,linux/arm64
+#          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase build environment based on Ubuntu 20.04 (image support for arm64 and amd64)
