@@ -70,9 +70,9 @@ RUN <<EOT bash
     npm i -g yarn
 EOT
 ENV PATH=/opt/node-v16.17.0/bin:$PATH
+
 ENV RUSTUP_HOME=/opt/rustup
 ENV CARGO_HOME=/opt/cargo
-
 RUN cd /root \
     && curl --proto '=https' --tlsv1.2 -sSf -o rustup.sh https://sh.rustup.rs \
     && chmod 700 rustup.sh \
