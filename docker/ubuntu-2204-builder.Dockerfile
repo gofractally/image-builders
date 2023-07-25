@@ -1,4 +1,4 @@
-FROM ubuntu:jammy
+FROM ubuntu:22.04
 
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
@@ -9,11 +9,11 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         binaryen                \
         build-essential         \
         ccache                  \
-        clang                   \
+        clang-15                \
         cmake                   \
         curl                    \
         git                     \
-        libclang-dev            \
+        libclang-15-dev         \
         libcurl4-openssl-dev    \
         libgbm-dev              \
         libgmp-dev              \
@@ -22,7 +22,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         libtool                 \
         libusb-1.0-0-dev        \
         libzstd-dev             \
-        llvm                    \
+        lld-15                  \
+        llvm-15                 \
         pkg-config              \
         zstd                    \
     && apt-get clean -yq \
@@ -38,18 +39,40 @@ RUN cd /root \
     && cd /root \
     && rm -rf boost*
 
-RUN cd /opt \
-    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-19/wasi-sdk-19.0-linux.tar.gz \
-    && tar xf wasi-sdk-19.0-linux.tar.gz \
-    && curl -LO https://nodejs.org/dist/v16.17.0/node-v16.17.0-linux-x64.tar.xz \
-    && tar xf node-v16.17.0-linux-x64.tar.xz \
-    && rm *.tar.* \
-    && export PATH="/opt/node-v16.17.0-linux-x64/bin:$PATH" \
-    && npm i -g yarn
+ARG TARGETARCH
+
+# https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-19
+ENV WASI_SDK_PREFIX=/usr/lib/llvm-15
+ENV PATH=${WASI_SDK_PREFIX}/bin:$PATH
+RUN cd ${WASI_SDK_PREFIX}/lib/clang/15.0.7/                     \
+    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-19/libclang_rt.builtins-wasm32-wasi-19.0.tar.gz \
+    && tar xf libclang_rt.builtins-wasm32-wasi-19.0.tar.gz      \
+    && rm libclang_rt.builtins-wasm32-wasi-19.0.tar.gz          \
+    && cd ${WASI_SDK_PREFIX}/share                              \
+    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-19/wasi-sysroot-19.0.tar.gz \
+    && tar xf wasi-sysroot-19.0.tar.gz                          \
+    && rm wasi-sysroot-19.0.tar.gz
+
+RUN <<EOT bash
+    set -eux
+    if [ "amd64" = "$TARGETARCH" ]; then
+        export NODEPATH=node-v16.17.0-linux-x64
+    elif [ "arm64" = "$TARGETARCH" ]; then
+        export NODEPATH=node-v16.17.0-linux-arm64
+    fi
+
+    cd /opt
+    curl -LO https://nodejs.org/dist/v16.17.0/\$NODEPATH.tar.xz
+    tar xf \$NODEPATH.tar.xz
+    rm \$NODEPATH.tar.xz
+    mv \$NODEPATH node-v16.17.0
+    export PATH="/opt/node-v16.17.0/bin:$PATH"
+    npm i -g yarn
+EOT
+ENV PATH=/opt/node-v16.17.0/bin:$PATH
 
 ENV RUSTUP_HOME=/opt/rustup
 ENV CARGO_HOME=/opt/cargo
-
 RUN cd /root \
     && curl --proto '=https' --tlsv1.2 -sSf -o rustup.sh https://sh.rustup.rs \
     && chmod 700 rustup.sh \
@@ -59,6 +82,4 @@ RUN cd /root \
     && chmod -R 777 $RUSTUP_HOME \
     && chmod -R 777 $CARGO_HOME \
     && rm rustup.sh
-
-ENV WASI_SDK_PREFIX=/opt/wasi-sdk-19.0
-ENV PATH=/opt/cargo/bin:/opt/node-v16.17.0-linux-x64/bin:$PATH
+ENV PATH=$CARGO_HOME/bin:$PATH
