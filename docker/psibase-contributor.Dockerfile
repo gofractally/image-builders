@@ -19,7 +19,7 @@ RUN export DEBIAN_FRONTEND=noninteractive   \
     && rm -rf /var/lib/apt/lists/*
 
 # Prometheus version 2.31
-COPY conf/prometheus/prometheus.yml /etc/prometheus/prometheus.yml
+COPY docker/conf/prometheus/prometheus.yml /etc/prometheus/prometheus.yml
 RUN useradd --no-create-home --shell /bin/false node_exporter \
     && useradd --no-create-home --shell /bin/false prome \
     && chown prome:prome /usr/bin/prometheus \
@@ -103,25 +103,25 @@ EXPOSE 9090
 EXPOSE 3000
 
 # psinode config
-ADD conf/psinode/scripts /usr/local/bin/
+ADD docker/conf/psinode/scripts /usr/local/bin/
 RUN chmod -R 0700 /usr/local/bin/
 RUN mkdir -p $PSINODE_PATH/psinode_db
-COPY conf/psinode/configs/http.config $PSINODE_PATH/psinode_db/http.config
-COPY conf/psinode/configs/https.config $PSINODE_PATH/psinode_db/config
+COPY docker/conf/psinode/configs/http.config $PSINODE_PATH/psinode_db/http.config
+COPY docker/conf/psinode/configs/https.config $PSINODE_PATH/psinode_db/config
 
 # grok_exporter config
-ADD conf/grok_exporter/patterns /etc/grok_exporter/
-COPY conf/grok_exporter/grok-exporter.yml /root/grok-exporter.yml
+ADD docker/conf/grok_exporter/patterns /etc/grok_exporter/
+COPY docker/conf/grok_exporter/grok-exporter.yml /root/grok-exporter.yml
 
 # grafana config
-COPY conf/grafana/psinode-datasources.yaml /usr/share/grafana/conf/provisioning/datasources/psinode-datasources.yaml
-COPY conf/grafana/psinode-dashboard.yaml /usr/share/grafana/conf/provisioning/dashboards/psinode-dashboard.yaml
+COPY docker/conf/grafana/psinode-datasources.yaml /usr/share/grafana/conf/provisioning/datasources/psinode-datasources.yaml
+COPY docker/conf/grafana/psinode-dashboard.yaml /usr/share/grafana/conf/provisioning/dashboards/psinode-dashboard.yaml
 RUN chmod 644 /usr/share/grafana/conf/provisioning/datasources/psinode-datasources.yaml && \
     chmod 644 /usr/share/grafana/conf/provisioning/dashboards/psinode-dashboard.yaml && \
     chown -R grafana:grafana /usr/share/grafana/conf/provisioning/datasources/psinode-datasources.yaml && \
     chown -R grafana:grafana /usr/share/grafana/conf/provisioning/dashboards/psinode-dashboard.yaml
-ADD conf/grafana/dashboards /var/lib/grafana/dashboards
-COPY conf/grafana/grafana-psinode.ini /etc/grafana/grafana-psinode.ini
+ADD docker/conf/grafana/dashboards /var/lib/grafana/dashboards
+COPY docker/conf/grafana/grafana-psinode.ini /etc/grafana/grafana-psinode.ini
 
 # Update environment vars
 ENV PATH=/root/psibase/build/psidk/bin:$PATH
