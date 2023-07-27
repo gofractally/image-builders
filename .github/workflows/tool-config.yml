@@ -30,7 +30,7 @@ jobs:
         run: |
           REGISTRY="ghcr.io"
           IMAGE="${REGISTRY}/${{ github.repository_owner }}/tool-config"
-          TAGS="${IMAGE}:${{ github.sha }}"
+          TAGS="${IMAGE}:${{ github.sha }},${IMAGE}:latest"
           echo ::set-output name=tags::${TAGS,,}
       - name: Showtag
         id: showtag
