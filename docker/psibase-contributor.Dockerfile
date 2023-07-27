@@ -6,20 +6,24 @@ ARG TARGETARCH
 RUN export DEBIAN_FRONTEND=noninteractive   \
     && apt-get update                       \
     && apt-get install -yq                  \
+        wget                                \
+    && wget -q -O /usr/share/keyrings/grafana.key https://apt.grafana.com/gpg.key \
+    && echo "deb [signed-by=/usr/share/keyrings/grafana.key] https://apt.grafana.com stable main" | tee -a /etc/apt/sources.list.d/grafana.list \
+    && apt-get update                       \
+    && apt-get install -yq                  \
         apt-transport-https                 \
         curl                                \
         gdb                                 \
         gnupg2                              \
+        grafana                             \
         iproute2                            \
         prometheus                          \
         unzip                               \
-        wget                                \
         xz-utils                            \
     && apt-get clean -yq                    \
     && rm -rf /var/lib/apt/lists/*
 
 # Prometheus version 2.31
-COPY docker/conf/prometheus/prometheus.yml /etc/prometheus/prometheus.yml
 RUN useradd --no-create-home --shell /bin/false node_exporter \
     && useradd --no-create-home --shell /bin/false prome \
     && chown prome:prome /usr/bin/prometheus \
@@ -60,16 +64,6 @@ RUN <<EOT bash
     fi
 EOT
 
-# Grafana
-RUN wget -q -O /usr/share/keyrings/grafana.key https://apt.grafana.com/gpg.key
-RUN echo "deb [signed-by=/usr/share/keyrings/grafana.key] https://apt.grafana.com stable main" | tee -a /etc/apt/sources.list.d/grafana.list
-RUN export DEBIAN_FRONTEND=noninteractive   \
-    && apt-get update                       \
-    && apt-get install -yq                  \
-        grafana                             \
-    && apt-get clean -yq                    \
-    && rm -rf /var/lib/apt/lists/*
-
 # Some nice-to-haves when using git inside the container
 # (prettify terminal, git completion)
 RUN echo $'\n\
@@ -88,11 +82,11 @@ export HOST_IP=$(ip route | awk "/default/ { print \$3 }") \
 
 # Install psibase
 ENV PSINODE_PATH=/root/psibase
-RUN mkdir -p ${PSINODE_PATH}
-WORKDIR ${PSINODE_PATH}
-RUN git clone https://github.com/gofractally/psibase.git . && \
-    git submodule update --init --recursive
 ENV PATH=${PSINODE_PATH}/build/psidk/bin:$PATH
+RUN mkdir -p ${PSINODE_PATH}    \
+    && cd ${PSINODE_PATH}       \
+    && git clone https://github.com/gofractally/psibase.git . \
+    && git submodule update --init --recursive
 
 # Expose ports
 ## Psinode
@@ -102,26 +96,6 @@ EXPOSE 9090
 ## Grafana
 EXPOSE 3000
 
-# psinode config
-ADD docker/conf/psinode/scripts /usr/local/bin/
+# Copy in tool config
+COPY --from=ghcr.io/gofractally/tool-config / /
 RUN chmod -R 0700 /usr/local/bin/
-RUN mkdir -p $PSINODE_PATH/psinode_db
-COPY docker/conf/psinode/configs/http.config $PSINODE_PATH/psinode_db/http.config
-COPY docker/conf/psinode/configs/https.config $PSINODE_PATH/psinode_db/config
-
-# grok_exporter config
-ADD docker/conf/grok_exporter/patterns /etc/grok_exporter/
-COPY docker/conf/grok_exporter/grok-exporter.yml /root/grok-exporter.yml
-
-# grafana config
-COPY docker/conf/grafana/psinode-datasources.yaml /usr/share/grafana/conf/provisioning/datasources/psinode-datasources.yaml
-COPY docker/conf/grafana/psinode-dashboard.yaml /usr/share/grafana/conf/provisioning/dashboards/psinode-dashboard.yaml
-RUN chmod 644 /usr/share/grafana/conf/provisioning/datasources/psinode-datasources.yaml && \
-    chmod 644 /usr/share/grafana/conf/provisioning/dashboards/psinode-dashboard.yaml && \
-    chown -R grafana:grafana /usr/share/grafana/conf/provisioning/datasources/psinode-datasources.yaml && \
-    chown -R grafana:grafana /usr/share/grafana/conf/provisioning/dashboards/psinode-dashboard.yaml
-ADD docker/conf/grafana/dashboards /var/lib/grafana/dashboards
-COPY docker/conf/grafana/grafana-psinode.ini /etc/grafana/grafana-psinode.ini
-
-# Update environment vars
-ENV PATH=/root/psibase/build/psidk/bin:$PATH
