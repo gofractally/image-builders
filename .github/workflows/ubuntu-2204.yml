@@ -74,7 +74,7 @@ jobs:
   psibase-contributor:
     name: psibase-contributor
     runs-on: ubuntu-latest
-    needs: [ubuntu-2204-builder, tool-config]
+    needs: ubuntu-2204-builder
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
