@@ -64,6 +64,28 @@ RUN <<EOT bash
     fi
 EOT
 
+# Install psibase
+ENV PSINODE_PATH=/root/psibase
+ENV PATH=${PSINODE_PATH}/build/psidk/bin:$PATH
+RUN mkdir -p ${PSINODE_PATH}    \
+    && cd ${PSINODE_PATH}       \
+    && git clone https://github.com/gofractally/psibase.git . \
+    && git submodule update --init --recursive
+
+# Copy in tool config
+COPY --from=ghcr.io/gofractally/https-tool-config / /
+RUN chmod -R 0700 /usr/local/bin/
+
+
+
+# Expose ports
+## Psinode
+EXPOSE 8080
+## Prometheus
+EXPOSE 9090
+## Grafana
+EXPOSE 3000
+
 # Some nice-to-haves when using git inside the container
 # (prettify terminal, git completion)
 RUN echo $'\n\
@@ -79,23 +101,3 @@ alias ll="ls -alF"\n\
 alias ls="ls --color=auto"\n\
 export HOST_IP=$(ip route | awk "/default/ { print \$3 }") \
 ' >> /root/.bashrc
-
-# Install psibase
-ENV PSINODE_PATH=/root/psibase
-ENV PATH=${PSINODE_PATH}/build/psidk/bin:$PATH
-RUN mkdir -p ${PSINODE_PATH}    \
-    && cd ${PSINODE_PATH}       \
-    && git clone https://github.com/gofractally/psibase.git . \
-    && git submodule update --init --recursive
-
-# Expose ports
-## Psinode
-EXPOSE 8080
-## Prometheus
-EXPOSE 9090
-## Grafana
-EXPOSE 3000
-
-# Copy in tool config
-COPY --from=ghcr.io/gofractally/tool-config / /
-RUN chmod -R 0700 /usr/local/bin/
