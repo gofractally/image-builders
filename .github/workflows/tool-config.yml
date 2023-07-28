@@ -1,4 +1,4 @@
-name: Generate tool-config image
+name: Generate tool-config images
 
 on:
   workflow_dispatch:
