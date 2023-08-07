@@ -1,4 +1,4 @@
-name: Generate psibase-builder-ubuntu-2004 image
+name: Generate ubuntu-2004 images
 
 on:
   workflow_dispatch:
