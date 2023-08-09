@@ -74,7 +74,6 @@ RUN mkdir -p ${PSINODE_PATH}    \
 
 # Copy in tool config
 COPY --from=ghcr.io/gofractally/https-tool-config / /
-RUN chmod -R 0700 /usr/local/bin/
 
 
 

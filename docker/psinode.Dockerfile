@@ -74,7 +74,6 @@ RUN wget https://github.com/gofractally/psibase/releases/download/rolling-releas
 
 # Copy in tool config
 COPY --from=ghcr.io/gofractally/http-tool-config / /
-RUN chmod -R 0700 /usr/local/bin/
 
 # Expose ports
 # Psinode port
@@ -98,7 +97,6 @@ ENV GF_SERVER_SERVE_FROM_SUB_PATH=true
 
 COPY docker/conf/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/conf/psinode/psinode-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/psinode-entrypoint.sh
 
 LABEL org.opencontainers.image.title="psinode" \
     org.opencontainers.image.description="Containers using this image will run psinode with working admin-sys dashboards." \
