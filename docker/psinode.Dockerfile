@@ -67,9 +67,11 @@ EOT
 # Install Psidk
 RUN wget https://github.com/gofractally/psibase/releases/download/rolling-release/psidk-ubuntu-2204.tar.gz \
     && tar xf psidk-ubuntu-2204.tar.gz          \
+        psidk-ubuntu-2204/bin/psinode           \
+        psidk-ubuntu-2204/share/psibase/        \
+        psidk-ubuntu-2204/share/man/            \
     && rm psidk-ubuntu-2204.tar.gz              \
-    && cd /opt/psidk-ubuntu-2204/bin            \
-    && rm psidk-cmake-args psitest
+    && cp psidk-ubuntu-2204/share/man/* /usr/share/man/man1/
 
 
 # Copy in tool config
