@@ -65,3 +65,9 @@ docker run --rm --network psinode_network ghcr.io/gofractally/psibase:PSINODE_VE
 ```
 
 > Note: Ensure that the version of the Psibase image you use matches the version of the Psinode image. Different versions may be incompatible in unpredictable ways that could cause silent failures/bugs.
+
+The `psibase` CLI tool may remotely connect to any publicly exposed psinode using the -a flag, for example:
+
+```
+psibase -s <PRIV_KEY> -a http://<PSINODE_URL>:8080 create bob --key <PUBKEY> --sender alice
+```
