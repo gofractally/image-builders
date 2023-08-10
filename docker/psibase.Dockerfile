@@ -1,8 +1,10 @@
-FROM ubuntu:22.04
-
+# Workaround because the ARG doesn't expand properly in COPY
+# https://stackoverflow.com/a/63472135
 ARG psinode_version
+FROM ghcr.io/gofractally/psinode:$psinode_version as psinode
 
-COPY --from=ghcr.io/gofractally/psinode:${psinode_version} /opt/psidk-ubuntu-2204/bin/psibase /opt/psidk-ubuntu-2204/bin/psibase
+FROM ubuntu:22.04
+COPY --from=psinode /opt/psidk-ubuntu-2204/bin/psibase /opt/psidk-ubuntu-2204/bin/psibase
 
 ENV PSIDK_HOME=/opt/psidk-ubuntu-2204
 ENV PATH=$PSIDK_HOME/bin:$PATH
