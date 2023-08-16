@@ -72,6 +72,7 @@ RUN <<EOT bash
     rm \$CLANGPATH.tar.xz
     mv \$CLANGPATH clang+llvm-15.0.6
 EOT
+ENV LD_LIBRARY_PATH=/opt/clang+llvm-15.0.6/lib/
 
 # Wasi-sdk
 # https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-19
