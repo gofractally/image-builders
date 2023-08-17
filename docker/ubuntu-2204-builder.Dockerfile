@@ -25,6 +25,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         lld-15                  \
         llvm-15                 \
         pkg-config              \
+        python3-requests        \
         zstd                    \
     && apt-get clean -yq \
     && rm -rf /var/lib/apt/lists/*

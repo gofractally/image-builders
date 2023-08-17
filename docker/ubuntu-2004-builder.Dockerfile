@@ -23,6 +23,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         libusb-1.0-0-dev        \
         libzstd-dev             \
         pkg-config              \
+        python3-requests        \
         zstd                    \
     && apt-get clean -yq \
     && rm -rf /var/lib/apt/lists/*
