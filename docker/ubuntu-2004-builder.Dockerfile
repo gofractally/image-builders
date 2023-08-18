@@ -1,5 +1,7 @@
 FROM ubuntu:20.04
 
+ARG TARGETARCH
+
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get install -yq software-properties-common \
@@ -20,11 +22,20 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         libssl-dev              \
         libstdc++-11-dev        \
         libtool                 \
-        libusb-1.0-0-dev        \
         libzstd-dev             \
         pkg-config              \
+        wget                    \
         zstd                    \
-    && apt-get clean -yq \
+#   Clang / LLVM
+    && wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc \
+    && add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main" \
+    && apt-get update           \
+    && apt-get install -yq      \
+        clang-16                \
+        libclang-16-dev         \
+        lld-16                  \
+        llvm-16                 \
+    && apt-get clean -yq        \
     && rm -rf /var/lib/apt/lists/*
 
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 \
@@ -54,37 +65,17 @@ RUN cd /root \
     && cd /root \
     && rm -rf boost*
 
-# Clang+llvm
-# https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.6
-# (Clang V15.0.7 is the version of clang found in wasi sdk 19)
-ARG TARGETARCH
-RUN <<EOT bash
-    set -eux
-    if [ "amd64" = "$TARGETARCH" ]; then
-        export CLANGPATH=clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04
-    elif [ "arm64" = "$TARGETARCH" ]; then
-        export CLANGPATH=clang+llvm-15.0.6-aarch64-linux-gnu
-    fi
-
-    cd /opt
-    curl -LO https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/\$CLANGPATH.tar.xz
-    tar xf \$CLANGPATH.tar.xz
-    rm \$CLANGPATH.tar.xz
-    mv \$CLANGPATH clang+llvm-15.0.6
-EOT
-
-# Wasi-sdk
-# https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-19
-ENV WASI_SDK_PREFIX=/opt/clang+llvm-15.0.6
+# https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-20
+ENV WASI_SDK_PREFIX=/usr/lib/llvm-16
 ENV PATH=${WASI_SDK_PREFIX}/bin:$PATH
-RUN cd ${WASI_SDK_PREFIX}/lib/clang/15.0.6/ \
-    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-19/libclang_rt.builtins-wasm32-wasi-19.0.tar.gz \
-    && tar xf libclang_rt.builtins-wasm32-wasi-19.0.tar.gz      \
-    && rm libclang_rt.builtins-wasm32-wasi-19.0.tar.gz          \
+RUN cd ${WASI_SDK_PREFIX}/lib/clang/16/                         \
+    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/libclang_rt.builtins-wasm32-wasi-20.0.tar.gz \
+    && tar xf libclang_rt.builtins-wasm32-wasi-20.0.tar.gz      \
+    && rm libclang_rt.builtins-wasm32-wasi-20.0.tar.gz          \
     && cd ${WASI_SDK_PREFIX}/share                              \
-    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-19/wasi-sysroot-19.0.tar.gz \
-    && tar xf wasi-sysroot-19.0.tar.gz                          \
-    && rm wasi-sysroot-19.0.tar.gz
+    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sysroot-20.0.tar.gz \
+    && tar xf wasi-sysroot-20.0.tar.gz                          \
+    && rm wasi-sysroot-20.0.tar.gz
 
 # Node
 RUN <<EOT bash
