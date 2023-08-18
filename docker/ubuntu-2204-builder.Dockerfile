@@ -1,5 +1,7 @@
 FROM ubuntu:22.04
 
+ARG TARGETARCH
+
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get install -yq software-properties-common \
@@ -9,25 +11,30 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         binaryen                \
         build-essential         \
         ccache                  \
-        clang-15                \
         cmake                   \
         curl                    \
         git                     \
-        libclang-15-dev         \
         libcurl4-openssl-dev    \
         libgbm-dev              \
         libgmp-dev              \
         libnss3-dev             \
         libssl-dev              \
         libtool                 \
-        libusb-1.0-0-dev        \
         libzstd-dev             \
-        lld-15                  \
-        llvm-15                 \
         pkg-config              \
         python3-requests        \
+        wget                    \
         zstd                    \
-    && apt-get clean -yq \
+#   Clang / LLVM
+    && wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc \
+    && add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main" \
+    && apt-get update           \
+    && apt-get install -yq      \
+        clang-16                \
+        libclang-16-dev         \
+        lld-16                  \
+        llvm-16                 \
+    && apt-get clean -yq        \
     && rm -rf /var/lib/apt/lists/*
 
 RUN cd /root \
@@ -40,19 +47,17 @@ RUN cd /root \
     && cd /root \
     && rm -rf boost*
 
-ARG TARGETARCH
-
-# https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-19
-ENV WASI_SDK_PREFIX=/usr/lib/llvm-15
+# https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-20
+ENV WASI_SDK_PREFIX=/usr/lib/llvm-16
 ENV PATH=${WASI_SDK_PREFIX}/bin:$PATH
-RUN cd ${WASI_SDK_PREFIX}/lib/clang/15.0.7/                     \
-    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-19/libclang_rt.builtins-wasm32-wasi-19.0.tar.gz \
-    && tar xf libclang_rt.builtins-wasm32-wasi-19.0.tar.gz      \
-    && rm libclang_rt.builtins-wasm32-wasi-19.0.tar.gz          \
+RUN cd ${WASI_SDK_PREFIX}/lib/clang/16/                         \
+    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/libclang_rt.builtins-wasm32-wasi-20.0.tar.gz \
+    && tar xf libclang_rt.builtins-wasm32-wasi-20.0.tar.gz      \
+    && rm libclang_rt.builtins-wasm32-wasi-20.0.tar.gz          \
     && cd ${WASI_SDK_PREFIX}/share                              \
-    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-19/wasi-sysroot-19.0.tar.gz \
-    && tar xf wasi-sysroot-19.0.tar.gz                          \
-    && rm wasi-sysroot-19.0.tar.gz
+    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sysroot-20.0.tar.gz \
+    && tar xf wasi-sysroot-20.0.tar.gz                          \
+    && rm wasi-sysroot-20.0.tar.gz
 
 RUN <<EOT bash
     set -eux
