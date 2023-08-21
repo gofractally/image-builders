@@ -1,6 +1,7 @@
 FROM ubuntu:22.04
 
 ARG TARGETARCH
+ARG RELEASE_TAG
 
 RUN export DEBIAN_FRONTEND=noninteractive   \
     && apt-get update                       \
@@ -65,7 +66,7 @@ RUN <<EOT bash
 EOT
 
 # Install Psidk
-RUN wget https://github.com/gofractally/psibase/releases/download/rolling-release/psidk-ubuntu-2204.tar.gz \
+RUN wget https://github.com/gofractally/psibase/releases/download/${RELEASE_TAG}/psidk-ubuntu-2204.tar.gz \
     && tar xf psidk-ubuntu-2204.tar.gz          \
         psidk-ubuntu-2204/bin/psinode           \
         psidk-ubuntu-2204/bin/psibase           \

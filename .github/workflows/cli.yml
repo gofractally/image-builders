@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version (maj.min.patch)'
+        description: 'Corresponds to git tag, e.g. "vX.Y.Z"'
         required: true
 
 jobs:
@@ -46,6 +46,8 @@ jobs:
       - name: Build & Publish Image
         uses: docker/build-push-action@v4
         with:
+          build-args: |
+            RELEASE_TAG=${{ github.event.inputs.version }}
           context: .
           push: true
           no-cache: true
