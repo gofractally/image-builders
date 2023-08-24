@@ -15,14 +15,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         g++-11                  \
         gcc-11                  \
         git                     \
-        libcurl4-openssl-dev    \
-        libgbm-dev              \
-        libgmp-dev              \
-        libnss3-dev             \
         libssl-dev              \
         libstdc++-11-dev        \
         libtool                 \
-        libzstd-dev             \
         pkg-config              \
         python3-requests        \
         wget                    \

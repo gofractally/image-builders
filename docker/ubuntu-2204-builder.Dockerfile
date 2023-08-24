@@ -14,13 +14,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         cmake                   \
         curl                    \
         git                     \
-        libcurl4-openssl-dev    \
-        libgbm-dev              \
-        libgmp-dev              \
-        libnss3-dev             \
         libssl-dev              \
         libtool                 \
-        libzstd-dev             \
         pkg-config              \
         python3-requests        \
         wget                    \
