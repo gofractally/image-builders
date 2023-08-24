@@ -18,6 +18,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         libssl-dev              \
         libstdc++-11-dev        \
         libtool                 \
+        libzstd-dev             \
         pkg-config              \
         python3-requests        \
         wget                    \
