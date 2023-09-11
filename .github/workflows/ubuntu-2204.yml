@@ -8,12 +8,11 @@ on:
   push:
     branches:
       - main
-      - "release/*"
     paths:
       - "docker/ubuntu-2204-builder.Dockerfile"
       - ".github/workflows/ubuntu-2204.yml"
   pull_request:
-    types: [assigned, opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened]
     paths:
       - "docker/ubuntu-2204-builder.Dockerfile"
       - ".github/workflows/ubuntu-2204.yml"
@@ -22,7 +21,6 @@ on:
     types: [completed]
     branches:
       - 'main'
-      - 'release/*'
 
 jobs:
   ubuntu-2204-builder:
