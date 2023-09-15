@@ -84,7 +84,12 @@ RUN cd /root \
     && chmod 700 rustup.sh \
     && ./rustup.sh -y --no-modify-path \
     && /opt/cargo/bin/rustup target add wasm32-wasi \
-    && /opt/cargo/bin/cargo install mdbook mdbook-linkcheck mdbook-mermaid sccache  \
+    && /opt/cargo/bin/cargo install \
+        mdbook              \
+        mdbook-linkcheck    \
+        mdbook-mermaid      \
+        sccache             \
+        wasm-pack           \
     && chmod -R 777 $RUSTUP_HOME \
     && chmod -R 777 $CARGO_HOME \
     && rm rustup.sh
