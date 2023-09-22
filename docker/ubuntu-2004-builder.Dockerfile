@@ -21,6 +21,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         libzstd-dev             \
         pkg-config              \
         python3-requests        \
+        strace                  \
         wget                    \
         zstd                    \
 #   Clang / LLVM
