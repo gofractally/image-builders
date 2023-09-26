@@ -100,3 +100,8 @@ alias ll="ls -alF"\n\
 alias ls="ls --color=auto"\n\
 export HOST_IP=$(ip route | awk "/default/ { print \$3 }") \
 ' >> /root/.bashrc
+
+# Caches
+ENV CCACHE_DIR=${PSINODE_PATH}/.caches/ccache
+ENV SCCACHE_DIR=${PSINODE_PATH}/.caches/sccache
+ENV CCACHE_CONFIGPATH=${PSINODE_PATH}/ccache.conf
