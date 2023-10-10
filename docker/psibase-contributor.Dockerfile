@@ -1,4 +1,5 @@
-FROM ghcr.io/gofractally/psibase-builder-ubuntu-2204:daea6b22ce481912f5b4d3c9c4701eb87d99dc63
+ARG BUILDER_TAG
+FROM ghcr.io/gofractally/psibase-builder-ubuntu-2204:${BUILDER_TAG}
 
 ARG TARGETARCH
 
