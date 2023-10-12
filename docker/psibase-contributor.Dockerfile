@@ -18,6 +18,7 @@ RUN export DEBIAN_FRONTEND=noninteractive   \
         gnupg2                              \
         grafana                             \
         iproute2                            \
+        libnss3                             \
         prometheus                          \
         unzip                               \
         xz-utils                            \
