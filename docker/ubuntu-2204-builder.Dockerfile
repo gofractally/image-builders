@@ -84,6 +84,7 @@ RUN cd /root \
         mdbook              \
         mdbook-linkcheck    \
         mdbook-mermaid      \
+        mdbook-pagetoc      \
         sccache             \
         wasm-pack           \
     && chmod -R 777 $RUSTUP_HOME \
