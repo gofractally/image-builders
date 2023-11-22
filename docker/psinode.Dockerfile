@@ -2,6 +2,7 @@ FROM ubuntu:22.04
 
 ARG TARGETARCH
 ARG RELEASE_TAG
+ARG SOFTHSM_PIN="Ch4ng#Me!"
 
 RUN export DEBIAN_FRONTEND=noninteractive   \
     && apt-get update                       \
@@ -17,6 +18,7 @@ RUN export DEBIAN_FRONTEND=noninteractive   \
         grafana                             \
         iproute2                            \
         prometheus                          \
+        softhsm2                            \
         supervisor                          \
         unzip                               \
         xz-utils                            \
@@ -75,6 +77,9 @@ RUN wget https://github.com/gofractally/psibase/releases/download/${RELEASE_TAG}
     && rm psidk-ubuntu-2204.tar.gz              \
     && cp psidk-ubuntu-2204/share/man/* /usr/share/man/man1/
 
+
+# Configure SoftHSM with default pins
+RUN softhsm2-util --init-token --slot 0 --label "psibase SoftHSM" --pin ${SOFTHSM_PIN} --so-pin ${SOFTHSM_PIN}
 
 # Copy in tool config
 COPY --from=ghcr.io/gofractally/http-tool-config / /

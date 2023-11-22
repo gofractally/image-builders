@@ -2,6 +2,7 @@ ARG BUILDER_TAG
 FROM ghcr.io/gofractally/psibase-builder-ubuntu-2204:${BUILDER_TAG}
 
 ARG TARGETARCH
+ARG SOFTHSM_PIN="Ch4ng#Me!"
 
 # Install deps
 RUN export DEBIAN_FRONTEND=noninteractive   \
@@ -18,10 +19,13 @@ RUN export DEBIAN_FRONTEND=noninteractive   \
         gnupg2                              \
         grafana                             \
         iproute2                            \
+        jq                                  \
         libnss3                             \
+        softhsm2                            \
         prometheus                          \
         unzip                               \
         xz-utils                            \
+        xxd                                 \
     && apt-get clean -yq                    \
     && rm -rf /var/lib/apt/lists/*
 
@@ -65,6 +69,9 @@ RUN <<EOT bash
         echo "Warning: Arm64 builds currently do not support admin-sys dashboards"
     fi
 EOT
+
+# Configure SoftHSM with default pins
+RUN softhsm2-util --init-token --slot 0 --label "psibase SoftHSM" --pin ${SOFTHSM_PIN} --so-pin ${SOFTHSM_PIN}
 
 # Install psibase
 ENV PSINODE_PATH=/root/psibase
