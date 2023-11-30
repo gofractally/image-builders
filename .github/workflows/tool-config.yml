@@ -52,18 +52,32 @@ jobs:
       - name: Install docker
         if: matrix.runner == 'macos-13-xlarge'
         run: |
-          brew install --cask docker
-          open --background --hide -a /Applications/Docker.app
+          echo "Downloading Docker..."
+          wget https://desktop.docker.com/mac/main/arm64/Docker.dmg
+
+          echo "Mounting Docker.dmg..."
+          hdiutil attach Docker.dmg
+
+          echo "Copying Docker.app to the Applications folder..."
+          cp -R /Volumes/Docker/Docker.app /Applications
+
+          echo "Unmounting Docker.dmg..."
+          hdiutil detach /Volumes/Docker
+
+          echo "Starting Docker..."
+          open /Applications/Docker.app
+
           counter=0
           while ! docker info > /dev/null 2>&1; do
               if [ $counter -ge 12 ]; then
                   echo "Docker did not start within one minute."
                   exit 1
               fi
-              echo "Waiting for Docker to start..."
+              echo "Waiting for Docker daemon..."
               sleep 5
               ((counter++))
           done
+
           echo "Docker is ready."
           
       - name: Docker Buildx setup
