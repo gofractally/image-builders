@@ -53,7 +53,7 @@ jobs:
         if: matrix.runner == 'macos-13-xlarge'
         run: |
           brew install --cask docker
-          open /Applications/Docker.app
+          open --background -a /Applications/Docker.app
           counter=0
           while ! docker info > /dev/null 2>&1; do
               if [ $counter -ge 6 ]; then
