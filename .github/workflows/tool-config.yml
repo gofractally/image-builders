@@ -22,12 +22,12 @@ jobs:
     name: https-tool-config
     strategy:
       matrix:
-        runner: [ubuntu-latest, macos-latest-xlarge]
+        runner: [ubuntu-latest, macos-13-xlarge]
         include:
-        - platforms: "linux/amd64,linux/arm64"
+        - platforms: "linux/amd64"
           runner: ubuntu-latest
         - platforms: "linux/arm64"
-          runner: macos-latest-xlarge
+          runner: macos-13-xlarge
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout code
@@ -46,11 +46,11 @@ jobs:
       - name: Showtag
         id: showtag
         run: echo ${{ steps.prep.outputs.tags }}
-      # - name: Set up QEMU
-      #   uses: docker/setup-qemu-action@v2
-      #   if: ${{ matrix.runner }} == 'ubuntu-latest'
-      #   with:
-      #     platforms: 'arm64'
+      - name: Install docker
+        if: ${{ matrix.runner }} == 'linux/arm64'
+        run: |
+          softwareupdate --install-rosetta 
+          brew cask install docker
       - name: Docker Buildx setup
         uses: docker/setup-buildx-action@v3
       - name: Login in to registry
