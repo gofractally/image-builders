@@ -20,7 +20,10 @@ on:
 jobs:
   https-tool-config:
     name: https-tool-config
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runner: [ubuntu-latest]
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -62,7 +65,10 @@ jobs:
           outputs: type=image,annotation-index.org.opencontainers.image.description=Config files for admin-sys dashboard tools connecting to psinode over https on 8080
   http-tool-config:
     name: http-tool-config
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runner: [ubuntu-latest]
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
