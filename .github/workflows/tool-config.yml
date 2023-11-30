@@ -37,7 +37,7 @@ jobs:
           IMAGE="${REGISTRY}/${{ github.repository_owner }}/https-tool-config"
           TAGS="${IMAGE}:${{ github.sha }},${IMAGE}:latest"
           TAGS_LOWER=$(echo "$TAGS" | tr '[:upper:]' '[:lower:]')
-          echo "tags=$TAGS_LOWER" >> $GITHUB_ENV
+          echo "tags=${TAGS_LOWER}" >> $GITHUB_OUTPUT
       - name: Showtag
         id: showtag
         run: echo ${{ steps.prep.outputs.tags }}
@@ -83,7 +83,7 @@ jobs:
           IMAGE="${REGISTRY}/${{ github.repository_owner }}/http-tool-config"
           TAGS="${IMAGE}:${{ github.sha }},${IMAGE}:latest"
           TAGS_LOWER=$(echo "$TAGS" | tr '[:upper:]' '[:lower:]')
-          echo "tags=$TAGS_LOWER" >> $GITHUB_ENV
+          echo "tags=$TAGS_LOWER" >> $GITHUB_OUTPUT
       - name: Showtag
         id: showtag
         run: echo ${{ steps.prep.outputs.tags }}
