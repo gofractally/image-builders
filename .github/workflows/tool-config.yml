@@ -65,7 +65,7 @@ jobs:
           hdiutil detach /Volumes/Docker
 
           echo "Starting Docker..."
-          open /Applications/Docker.app
+          open --background -a /Applications/Docker.app
 
           counter=0
           while ! docker info > /dev/null 2>&1; do
