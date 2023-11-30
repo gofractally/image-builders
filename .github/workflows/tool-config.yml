@@ -50,7 +50,7 @@ jobs:
         run: |
           echo ${{ matrix.runner }}
       - name: Install docker
-        if: matrix.runner == 'linux/arm64'
+        if: matrix.runner == 'macos-13-xlarge'
         run: |
           brew install --cask docker
       - name: Docker Buildx setup
