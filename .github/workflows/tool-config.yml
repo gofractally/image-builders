@@ -47,7 +47,7 @@ jobs:
         id: showtag
         run: echo ${{ steps.prep.outputs.tags }}
       - name: Install docker
-        if: ${{ matrix.runner }} == 'linux/arm64'
+        if: matrix.runner == 'linux/arm64'
         run: |
           brew install --cask docker
       - name: Docker Buildx setup
