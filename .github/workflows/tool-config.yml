@@ -22,7 +22,7 @@ jobs:
     name: https-tool-config
     strategy:
       matrix:
-        runner: [ubuntu-latest]
+        runner: [ubuntu-latest, macos-latest-xlarge]
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout code
@@ -67,7 +67,7 @@ jobs:
     name: http-tool-config
     strategy:
       matrix:
-        runner: [ubuntu-latest]
+        runner: [ubuntu-latest, macos-latest-xlarge]
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout code
