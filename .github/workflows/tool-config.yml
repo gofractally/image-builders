@@ -47,7 +47,7 @@ jobs:
         id: showtag
         run: echo ${{ steps.prep.outputs.tags }}
       - name: Print matrix runner
-        run |
+        run: |
           echo ${{ matrix.runner }}
       - name: Install docker
         if: matrix.runner == 'linux/arm64'
