@@ -54,7 +54,11 @@ jobs:
         run: |
           brew install --cask docker
           open /Applications/Docker.app
-          docker info
+          while ! docker info > /dev/null 2>&1; do
+              echo "Waiting for Docker to start..."
+              sleep 5
+          done
+          echo "Docker is ready."
           
       - name: Docker Buildx setup
         uses: docker/setup-buildx-action@v3
