@@ -96,13 +96,6 @@ EXPOSE 3000
 ENV PSIDK_HOME=/opt/psidk-ubuntu-2204
 ENV PSINODE_PATH=/root/psibase
 ENV PATH=$PSIDK_HOME/bin:$PATH
-## Grafana vars
-ENV GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-ENV GF_AUTH_ANONYMOUS_ENABLED=true
-ENV GF_AUTH_BASIC_ENABLED=false
-ENV GF_SECURITY_ALLOW_EMBEDDING=true
-ENV GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s:%(http_port)s/grafana/
-ENV GF_SERVER_SERVE_FROM_SUB_PATH=true
 
 COPY docker/conf/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/conf/psinode/psinode-entrypoint.sh /usr/local/bin/
