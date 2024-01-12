@@ -30,7 +30,7 @@ This image is used by the psibase-contributor repository to simplify setting up 
 
 ## psinode
 
-This image is used to run [psinode](https://doc-sys.psibase.io/psibase/psinode.html#psinode) from prebuild psidk binaries in a docker container on Ubuntu 22.04. Psinode run in this way is exposed to the host on port 8080.
+This image is used to run [psinode](https://doc-sys.psibase.io/run-infrastructure/cli/psinode.html) from prebuilt psidk binaries in a docker container on Ubuntu 22.04. Psinode run in this way is exposed to the host on port 8080.
 
 > Note: Teaching the various docker CLI options is outside the scope of this document, please see the [Docker CLI documentation](https://docs.docker.com/engine/reference/commandline/cli/) if you're confused about any of the flags.
 
@@ -39,7 +39,7 @@ If using this image to run psinode on your local machine, you can run it with:
 ```
 docker run --rm --name psinode -p 8080:8080 -p 3000:3000 -p 9090:9090 --network psinode_network ghcr.io/gofractally/psinode:VERSION
 ```
-> Note 1: If you don't need the [admin-sys](https://doc-sys.psibase.io/system-service/admin-sys.html?highlight=admin-sys#admin-sys) monitoring dashboards, then you only need to expose Psinode container port 8080.
+> Note 1: If you don't need the [admin-sys](https://doc-sys.psibase.io/default-apps/admin-sys.html) monitoring dashboards, then you only need to expose Psinode container port 8080.
 
 > Note 2: Creating and using a custom docker network simply makes it easier to connect to the psinode container from other docker containers. This is helpful, for example, if you plan to interact with the container from a separate `psibase` container. If you only intend to interact with the container over TCP in the browser, then you don't need to use a custom docker network.
 
@@ -56,7 +56,7 @@ The second way is to use the separate `psibase` image on the same network as the
 
 ## psibase
 
-This image is used to run [psibase](https://doc-sys.psibase.io/psibase/psibase.html) from prebuild psidk binaries in a docker container on Ubuntu 22.04.
+This image is used to run [psibase](https://doc-sys.psibase.io/run-infrastructure/cli/psibase.html) from prebuilt psidk binaries in a docker container on Ubuntu 22.04.
 
 If you're using this tool to run commands on a `psinode` instance you started in a local docker container, you should run this image on the same custom docker network to allow you to connect to it using its container name. For example, the following is what the boot command would look like if `psinode_network` is the name of the custom docker network created for and used by the psinode container:
 
