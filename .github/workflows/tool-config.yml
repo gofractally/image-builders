@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - main
-      - "release/*"
     paths:
       - "docker/tool-config.Dockerfile"
       - ".github/workflows/tool-config.yml"
@@ -55,7 +54,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/release/*') }}
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           file: docker/tool-config.Dockerfile
           build-args: |
             protocol=https
@@ -97,7 +96,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/release/*') }}
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           file: docker/tool-config.Dockerfile
           build-args: |
             protocol=http
