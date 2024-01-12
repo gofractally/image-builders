@@ -65,7 +65,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           file: docker/ubuntu-2204-builder.Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
 #          platforms: linux/amd64,linux/arm64
@@ -110,7 +110,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           build-args: |
             BUILDER_TAG=${{ github.sha }}
           file: docker/psibase-contributor.Dockerfile

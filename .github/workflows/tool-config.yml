@@ -11,11 +11,13 @@ on:
     paths:
       - "docker/tool-config.Dockerfile"
       - ".github/workflows/tool-config.yml"
+      - "docker/conf/*"
   pull_request:
     types: [assigned, opened, synchronize, reopened, labeled]
     paths:
       - "docker/tool-config.Dockerfile"
       - ".github/workflows/tool-config.yml"
+      - "docker/conf/*"
 
 jobs:
   https-tool-config:
@@ -53,7 +55,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/release/*') }}
           file: docker/tool-config.Dockerfile
           build-args: |
             protocol=https
@@ -95,7 +97,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/release/*') }}
           file: docker/tool-config.Dockerfile
           build-args: |
             protocol=http
