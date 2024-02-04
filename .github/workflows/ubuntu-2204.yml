@@ -82,8 +82,10 @@ jobs:
       - name: PR exclusive - Save docker image to archive
         if: github.event_name == 'pull_request'
         run: |
+          docker images
+          curl http://localhost:5000/v2/pr-psibase-builder-ubuntu-2204/tags/list
           docker save ${{ steps.prep.outputs.tags }} -o temp-pr-image.tar
-    
+
       - name: PR exclusive - Upload docker image archive
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
