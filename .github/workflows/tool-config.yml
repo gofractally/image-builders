@@ -12,7 +12,7 @@ on:
       - ".github/workflows/tool-config.yml"
       - "docker/conf/*"
   pull_request:
-    types: [assigned, opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened]
     paths:
       - "docker/tool-config.Dockerfile"
       - ".github/workflows/tool-config.yml"

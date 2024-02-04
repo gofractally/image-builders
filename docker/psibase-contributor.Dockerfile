@@ -1,5 +1,5 @@
-ARG BUILDER_TAG
-FROM ghcr.io/gofractally/psibase-builder-ubuntu-2204:${BUILDER_TAG}
+ARG PARENT_IMAGE
+FROM ${PARENT_IMAGE}
 
 ARG TARGETARCH
 ARG SOFTHSM_PIN="Ch4ng#Me!"

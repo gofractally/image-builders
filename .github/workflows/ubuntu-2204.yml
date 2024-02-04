@@ -16,7 +16,7 @@ on:
       - "docker/ubuntu-2204-builder.Dockerfile"
       - ".github/workflows/ubuntu-2204.yml"
   workflow_run:
-    workflows: ["Generate tool-config image"]
+    workflows: ["Generate tool-config images"]
     types: [completed]
     branches:
       - 'main'
@@ -37,17 +37,18 @@ jobs:
         run: |
           REGISTRY="ghcr.io"
           IMAGE="${REGISTRY}/${{ github.repository_owner }}/psibase-builder-ubuntu-2204"
-          TAGS="${IMAGE}:${{ github.sha }}"
+          SHA_TAG="${IMAGE}:${{ github.sha }}"
+          PR_TAG="pr-${IMAGE}:latest"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            TAGS="${PR_TAG}"
+          else
+            TAGS="${SHA_TAG}"
+          fi
           echo "tags=${TAGS,,}" >> $GITHUB_OUTPUT
 
       - name: Showtag
         id: showtag
         run: echo ${{ steps.prep.outputs.tags }}
-
-#      - name: Set up QEMU
-#        uses: docker/setup-qemu-action@v2
-#        with:
-#          platforms: 'arm64'
 
       - name: Docker Buildx setup
         uses: docker/setup-buildx-action@v2
@@ -65,12 +66,23 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          push: ${{ github.event_name != 'pull_request' }}
           file: docker/ubuntu-2204-builder.Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
-#          platforms: linux/amd64,linux/arm64
           platforms: linux/amd64
-          outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase build environment based on Ubuntu 22.04
+          outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase build environment based on Ubuntu 22.04 (amd64)
+
+      - name: PR exclusive - Save docker image to archive
+        if: github.event_name == 'pull_request'
+        run: docker save ${{ steps.prep.outputs.tags }} -o temp-pr-image.tar
+    
+      - name: PR exclusive - Upload docker image archive
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: temp-pr-image.tar
+
   psibase-contributor:
     name: psibase-contributor
     runs-on: ubuntu-latest
@@ -106,13 +118,31 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: PR exclusive - Download docker image archive
+        if: github.event_name == 'pull_request'
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+
+      - name: PR exclusive - Install docker image from archive
+        run: |
+          docker load -i temp-pr-image.tar
+
+      - name: Set PARENT_IMAGE env
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "PARENT_IMAGE=pr-ghcr.io/gofractally/psibase-builder-ubuntu-2204:latest" >> $GITHUB_ENV
+          else
+            echo "PARENT_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${{ github.sha }}" >> $GITHUB_ENV
+          fi
+
       - name: Build & Publish Image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           build-args: |
-            BUILDER_TAG=${{ github.sha }}
+            PARENT_IMAGE=${{ env.PARENT_IMAGE }}
           file: docker/psibase-contributor.Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
           platforms: linux/amd64
