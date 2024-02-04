@@ -25,6 +25,11 @@ jobs:
   ubuntu-2204-builder:
     name: psibase-builder-ubuntu-2204
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -38,7 +43,7 @@ jobs:
           REGISTRY="ghcr.io"
           IMAGE="${REGISTRY}/${{ github.repository_owner }}/psibase-builder-ubuntu-2204"
           SHA_TAG="${IMAGE}:${{ github.sha }}"
-          PR_TAG="pr-psibase-builder-ubuntu-2204:latest"
+          PR_TAG="localhost:5000/pr-psibase-builder-ubuntu-2204:latest"
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             TAGS="${PR_TAG}"
           else
@@ -66,7 +71,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           file: docker/ubuntu-2204-builder.Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
           platforms: linux/amd64
@@ -75,14 +80,13 @@ jobs:
       - name: PR exclusive - Save docker image to archive
         if: github.event_name == 'pull_request'
         run: |
-          docker images
           docker save ${{ steps.prep.outputs.tags }} -o temp-pr-image.tar
     
       - name: PR exclusive - Upload docker image archive
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image
+          name: base-image
           path: temp-pr-image.tar
 
   psibase-contributor:
@@ -124,7 +128,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: actions/download-artifact@v3
         with:
-          name: docker-image
+          name: base-image
 
       - name: PR exclusive - Install docker image from archive
         run: |
