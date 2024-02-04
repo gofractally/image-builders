@@ -38,7 +38,7 @@ jobs:
           REGISTRY="ghcr.io"
           IMAGE="${REGISTRY}/${{ github.repository_owner }}/psibase-builder-ubuntu-2204"
           SHA_TAG="${IMAGE}:${{ github.sha }}"
-          PR_TAG="pr-${IMAGE}:latest"
+          PR_TAG="pr-psibase-builder-ubuntu-2204:latest"
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             TAGS="${PR_TAG}"
           else
@@ -74,7 +74,9 @@ jobs:
 
       - name: PR exclusive - Save docker image to archive
         if: github.event_name == 'pull_request'
-        run: docker save ${{ steps.prep.outputs.tags }} -o temp-pr-image.tar
+        run: |
+          docker images
+          docker save ${{ steps.prep.outputs.tags }} -o temp-pr-image.tar
     
       - name: PR exclusive - Upload docker image archive
         if: github.event_name == 'pull_request'
