@@ -83,10 +83,12 @@ jobs:
       - name: (PR only) - Save docker image to archive
         if: github.event_name == 'pull_request'
         run: |
-          docker images
-          curl http://localhost:5000/v2/pr-psibase-builder-ubuntu-2204/tags/list
+          echo "Pulling ${{ steps.prep.outputs.tags }}"
           docker pull ${{ steps.prep.outputs.tags }}
+          echo "Saving ${{ github.repository_owner }}/psibase-builder-ubuntu-2204:latest"
           docker save "${{ github.repository_owner }}/psibase-builder-ubuntu-2204:latest" -o temp-pr-image.tar
+          echo "Saving ${{ steps.prep.outputs.tags }}"
+          docker save "${{ steps.prep.outputs.tags }}" -o temp-pr-image2.tar
 
       - name: (PR only) - Upload docker image archive
         if: github.event_name == 'pull_request'
