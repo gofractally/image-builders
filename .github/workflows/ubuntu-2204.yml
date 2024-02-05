@@ -56,7 +56,7 @@ jobs:
         id: showtag
         run: echo ${{ steps.prep.outputs.tags }}
 
-      - name: (PR only) - Docker buildx config
+      - name: (PR only) - Config docker buildx network
         if: github.event_name == 'pull_request'
         uses: docker/setup-buildx-action@v2
         with:
@@ -84,25 +84,25 @@ jobs:
       - name: (PR only) - Save docker image to archive
         if: github.event_name == 'pull_request'
         run: |
-          echo "Pulling ${{ steps.prep.outputs.tags }}"
           docker pull ${{ steps.prep.outputs.tags }}
-          docker images
-          echo "Saving ${{ github.repository_owner }}/psibase-builder-ubuntu-2204:latest"
-          docker save ${{ steps.prep.outputs.tags }} -o temp-pr-image.tar
-          echo "Saving ${{ steps.prep.outputs.tags }}"
-          docker save "${{ steps.prep.outputs.tags }}" -o temp-pr-image2.tar
+          docker save ${{ steps.prep.outputs.tags }} -o contributor-base-image.tar
 
       - name: (PR only) - Upload docker image archive
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: base-image
-          path: temp-pr-image.tar
+          name: contributor-base-image.tar
+          path: contributor-base-image.tar
 
   psibase-contributor:
     name: psibase-contributor
     runs-on: ubuntu-latest
     needs: ubuntu-2204-builder
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -113,19 +113,28 @@ jobs:
       - name: Preparation
         id: prep
         run: |
-          REGISTRY="ghcr.io"
-          IMAGE="${REGISTRY}/${{ github.repository_owner }}/psibase-contributor"
-          TAGS="${IMAGE}:${{ github.sha }},${IMAGE}:latest"
+          OWNER="${{ github.repository_owner }}"
+          IMAGE="psibase-contributor"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            REGISTRY="localhost:5000"
+            TAG="latest"
+          else
+            REGISTRY="ghcr.io"
+            TAG="${{ github.sha }}"
+          fi
+          TAGS="${REGISTRY}/${OWNER}/${IMAGE}:${TAG}"
           echo "tags=${TAGS,,}" >> $GITHUB_OUTPUT
 
       - name: Showtag
         id: showtag
         run: echo ${{ steps.prep.outputs.tags }}
 
-      - name: Docker Buildx setup
+      - name: (PR only) - Config docker buildx network
+        if: github.event_name == 'pull_request'
         uses: docker/setup-buildx-action@v2
         with:
           buildkitd-flags: --debug
+          driver-opts: network=host
 
       - name: Login in to registry
         uses: docker/login-action@v2
@@ -134,32 +143,49 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: PR exclusive - Download docker image archive
+      - name: PR exclusive - Download contributor base image from artifact
         if: github.event_name == 'pull_request'
         uses: actions/download-artifact@v3
         with:
-          name: base-image
+          name: contributor-base-image.tar
 
-      - name: PR exclusive - Install docker image from archive
+      - name: PR exclusive - Install downloaded image to docker
+        if: github.event_name == 'pull_request'
         run: |
-          docker load -i temp-pr-image.tar
+          docker load -i contributor-base-image.tar
+          echo "Local docker images:"
+          docker images
 
-      - name: Set PARENT_IMAGE env
+      - name: Set BASE_IMAGE
+        id: base_image
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "PARENT_IMAGE=pr-ghcr.io/gofractally/psibase-builder-ubuntu-2204:latest" >> $GITHUB_ENV
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "BASE_IMAGE=??" >> $GITHUB_OUTPUT
           else
-            echo "PARENT_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${{ github.sha }}" >> $GITHUB_ENV
+            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${{ github.sha }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Build & Publish Image
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          push: true
           build-args: |
-            PARENT_IMAGE=${{ env.PARENT_IMAGE }}
+            BASE_IMAGE=${{ steps.base_image.outputs.BASE_IMAGE }}
           file: docker/psibase-contributor.Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
           platforms: linux/amd64
           outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase development environment
+
+      - name: (PR only) - Save docker image to archive
+        if: github.event_name == 'pull_request'
+        run: |
+          docker pull ${{ steps.prep.outputs.tags }}
+          docker save ${{ steps.prep.outputs.tags }} -o pull-request_psibase-contributor.tar
+
+      - name: (PR only) - Upload docker image archive as artifact
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pull-request_psibase-contributor.tar
+          path: pull-request_psibase-contributor.tar
