@@ -88,7 +88,7 @@ jobs:
           docker pull ${{ steps.prep.outputs.tags }}
           docker images
           echo "Saving ${{ github.repository_owner }}/psibase-builder-ubuntu-2204:latest"
-          docker save "${{ github.repository_owner }}/psibase-builder-ubuntu-2204:latest" -o temp-pr-image.tar
+          docker save ${{ steps.prep.outputs.tags }} -o temp-pr-image.tar
           echo "Saving ${{ steps.prep.outputs.tags }}"
           docker save "${{ steps.prep.outputs.tags }}" -o temp-pr-image2.tar
 
