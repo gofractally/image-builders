@@ -40,22 +40,23 @@ jobs:
       - name: Preparation
         id: prep
         run: |
-          REGISTRY="ghcr.io"
-          IMAGE="${REGISTRY}/${{ github.repository_owner }}/psibase-builder-ubuntu-2204"
-          SHA_TAG="${IMAGE}:${{ github.sha }}"
-          PR_TAG="localhost:5000/pr-psibase-builder-ubuntu-2204:latest"
+          OWNER="${{ github.repository_owner }}"
+          IMAGE="psibase-builder-ubuntu-2204"
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            TAGS="${PR_TAG}"
+            REGISTRY="localhost:5000"
+            TAG="latest"
           else
-            TAGS="${SHA_TAG}"
+            REGISTRY="ghcr.io"
+            TAG="${{ github.sha }}"
           fi
+          TAGS="${REGISTRY}/${OWNER}/${IMAGE}:${TAG}"
           echo "tags=${TAGS,,}" >> $GITHUB_OUTPUT
 
       - name: Showtag
         id: showtag
         run: echo ${{ steps.prep.outputs.tags }}
 
-      - name: Docker Buildx setup
+      - name: (PR only) - Docker buildx config
         if: github.event_name == 'pull_request'
         uses: docker/setup-buildx-action@v2
         with:
@@ -79,14 +80,15 @@ jobs:
           platforms: linux/amd64
           outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase build environment based on Ubuntu 22.04 (amd64)
 
-      - name: PR exclusive - Save docker image to archive
+      - name: (PR only) - Save docker image to archive
         if: github.event_name == 'pull_request'
         run: |
           docker images
           curl http://localhost:5000/v2/pr-psibase-builder-ubuntu-2204/tags/list
-          docker save ${{ steps.prep.outputs.tags }} -o temp-pr-image.tar
+          docker pull ${{ steps.prep.outputs.tags }}
+          docker save "${{ github.repository_owner }}/psibase-builder-ubuntu-2204:latest" -o temp-pr-image.tar
 
-      - name: PR exclusive - Upload docker image archive
+      - name: (PR only) - Upload docker image archive
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
