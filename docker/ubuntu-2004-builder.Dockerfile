@@ -123,6 +123,7 @@ RUN cd /root \
     && ./rustup.sh -y --no-modify-path \
     && /opt/cargo/bin/rustup target add wasm32-wasi \
     && /opt/cargo/bin/cargo install \
+        cargo-component     \
         mdbook              \
         mdbook-linkcheck    \
         mdbook-mermaid      \

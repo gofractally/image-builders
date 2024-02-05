@@ -85,7 +85,10 @@ RUN mkdir -p ${PSINODE_PATH}    \
 # Copy in tool config
 COPY --from=ghcr.io/gofractally/https-tool-config / /
 
-
+# Install nice-to-have rust/wasm tooling
+RUN $CARGO_HOME/bin/cargo install \
+    cargo-edit \
+    wasm-tools
 
 # Expose ports
 ## Psinode
