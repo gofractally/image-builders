@@ -120,7 +120,6 @@ jobs:
           dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 100
           df -h
           echo "Removing large packages"
-          rm contributor-base-image.tar
           sudo apt-get remove -y '^ghc-8.*'
           sudo apt-get remove -y '^dotnet-.*'
           sudo apt-get remove -y '^llvm-.*'
