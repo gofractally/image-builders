@@ -160,7 +160,7 @@ jobs:
         id: base_image
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "BASE_IMAGE=??" >> $GITHUB_OUTPUT
+            echo "BASE_IMAGE=localhost:5000/gofractally/psibase-builder-ubuntu-2204:latest" >> $GITHUB_OUTPUT
           else
             echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${{ github.sha }}" >> $GITHUB_OUTPUT
           fi
