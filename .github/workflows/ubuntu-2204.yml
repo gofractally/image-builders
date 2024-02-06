@@ -64,7 +64,7 @@ jobs:
           driver-opts: network=host
 
       - name: Login in to registry
-        if: github.event_name == 'pull_request'
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -91,7 +91,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: contributor-base-image.tar
+          name: contributor-base-image
           path: contributor-base-image.tar
 
   psibase-contributor:
@@ -145,9 +145,9 @@ jobs:
 
       - name: PR exclusive - Download contributor base image from artifact
         if: github.event_name == 'pull_request'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: contributor-base-image.tar
+          name: contributor-base-image
 
       - name: PR exclusive - Install downloaded image to docker
         if: github.event_name == 'pull_request'
