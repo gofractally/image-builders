@@ -184,6 +184,7 @@ jobs:
       - name: (PR only) - Save docker image to archive
         if: github.event_name == 'pull_request'
         run: |
+          rm contributor-base-image.tar
           docker pull ${{ steps.prep.outputs.tags }}
           docker save ${{ steps.prep.outputs.tags }} -o pr-psibase_contributor.tar
 
