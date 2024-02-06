@@ -143,18 +143,22 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: PR exclusive - Download contributor base image from artifact
+      - name: (PR only) - Download contributor base image from artifact
         if: github.event_name == 'pull_request'
         uses: actions/download-artifact@v4
         with:
           name: contributor-base-image
 
-      - name: PR exclusive - Install downloaded image to docker
+      - name: (PR only) - Install downloaded image to docker
         if: github.event_name == 'pull_request'
         run: |
           docker load -i contributor-base-image.tar
           echo "Local docker images:"
           docker images
+      
+      - name: (PR only) - Push image to local registry
+        run: |
+          docker push localhost:5000/gofractally/psibase-builder-ubuntu-2204:latest
 
       - name: Set BASE_IMAGE
         id: base_image
@@ -181,11 +185,11 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           docker pull ${{ steps.prep.outputs.tags }}
-          docker save ${{ steps.prep.outputs.tags }} -o pull-request_psibase-contributor.tar
+          docker save ${{ steps.prep.outputs.tags }} -o pr-psibase_contributor.tar
 
       - name: (PR only) - Upload docker image archive as artifact
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: pull-request_psibase-contributor.tar
-          path: pull-request_psibase-contributor.tar
+          name: pr-psibase_contributor
+          path: pr-psibase_contributor.tar
