@@ -93,6 +93,7 @@ jobs:
         with:
           name: contributor-base-image
           path: contributor-base-image.tar
+          retention-days: 1
 
   psibase-contributor:
     name: psibase-contributor
@@ -155,6 +156,7 @@ jobs:
           driver-opts: network=host
 
       - name: Login in to registry
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -199,15 +201,17 @@ jobs:
           platforms: linux/amd64
           outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase development environment
 
-#      - name: (PR only) - Save docker image to archive
-#        if: github.event_name == 'pull_request'
-#        run: |
-#          docker pull ${{ steps.prep.outputs.tags }}
-#          docker save ${{ steps.prep.outputs.tags }} -o pr-psibase_contributor.tar
+      - name: (PR only) - Save docker image to archive
+        if: github.event_name == 'pull_request'
+        run: |
+          docker rm 
+          docker pull ${{ steps.prep.outputs.tags }}
+          docker save ${{ steps.prep.outputs.tags }} -o pr-psibase_contributor.tar
 
-      # - name: (PR only) - Upload docker image archive as artifact
-      #   if: github.event_name == 'pull_request'
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: pr-psibase_contributor
-      #     path: pr-psibase_contributor.tar
+      - name: (PR only) - Upload docker image archive as artifact
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-psibase_contributor
+          path: pr-psibase_contributor.tar
+          retention-days: 1
