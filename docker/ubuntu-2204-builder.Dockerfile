@@ -58,20 +58,20 @@ RUN cd ${WASI_SDK_PREFIX}/lib/clang/16/                         \
 RUN <<EOT bash
     set -eux
     if [ "amd64" = "$TARGETARCH" ]; then
-        export NODEPATH=node-v16.17.0-linux-x64
+        export NODEPATH=node-v20.11.0-linux-x64
     elif [ "arm64" = "$TARGETARCH" ]; then
-        export NODEPATH=node-v16.17.0-linux-arm64
+        export NODEPATH=node-v20.11.0-linux-arm64
     fi
 
     cd /opt
-    curl -LO https://nodejs.org/dist/v16.17.0/\$NODEPATH.tar.xz
+    curl -LO https://nodejs.org/dist/v20.11.0/\$NODEPATH.tar.xz
     tar xf \$NODEPATH.tar.xz
     rm \$NODEPATH.tar.xz
-    mv \$NODEPATH node-v16.17.0
-    export PATH="/opt/node-v16.17.0/bin:$PATH"
+    mv \$NODEPATH node-v20.11.0
+    export PATH="/opt/node-v20.11.0/bin:$PATH"
     npm i -g yarn
 EOT
-ENV PATH=/opt/node-v16.17.0/bin:$PATH
+ENV PATH=/opt/node-v20.11.0/bin:$PATH
 
 ENV RUSTUP_HOME=/opt/rustup
 ENV CARGO_HOME=/opt/cargo
