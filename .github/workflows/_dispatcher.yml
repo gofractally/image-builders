@@ -1,0 +1,172 @@
+# This file is the dispatcher for the rest of the workflows that have complex dependencies.
+# The `cli.yml` doesn't need to be dispatched via this dispatcher because it is only run manually.
+
+name: Dispatcher
+
+env:
+  GITHUB_OUTPUT: ""
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docker/**"
+      - ".github/**"
+    paths-ignore:
+      - ".github/workflows/cli.yml"
+      - "docker/psibase.Dockerfile"
+      - "docker/psinode.Dockerfile"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "docker/**"
+      - ".github/**"
+    paths-ignore:
+      - ".github/workflows/cli.yml"
+      - "docker/psibase.Dockerfile"
+      - "docker/psinode.Dockerfile"
+
+jobs:
+  determine-actions:
+    name: Set up the dispatching variables
+    runs-on: ubuntu-latest
+    outputs:
+      pr: ${{ steps.conditionals.outputs.pr }}
+      build_strategy: ${{ steps.schedule-builders.outputs.builder_strategy }}
+
+    steps:
+      - name: Determine artifact registry
+        id: conditionals
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "pr=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v42
+
+      - name: Determine what to dispatch
+        id: schedule-builders
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          chmod +x .github/scripts/check-patterns.sh
+          echo "builder_strategy=$(./.github/scripts/check-patterns.sh "$ALL_CHANGED_FILES")" >> $GITHUB_OUTPUT
+
+# Possible dispatching scenarios
+# 0: don't run anything
+# 1: run tool config (and all dependent workflows)
+# 2: run 2004 builder
+# 3: run 2204 builder (and dependent)
+# 4: run both builders (and dependent)
+# 5: run contributor
+
+# CASE 0
+  do-nothing:
+    name: "Not building anything"
+    needs: determine-actions
+    if: ${{ needs.determine-actions.outputs.build_strategy == '0' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: noop
+        run: true
+
+
+# CASE 1
+  start-with-tool-config-1:
+    name: "Build tool-config"
+    needs: determine-actions
+    if: ${{ needs.determine-actions.outputs.build_strategy == '1' }}
+    uses: ./.github/workflows/tool-config.yml
+    with:
+      is_pr: ${{ needs.determine-actions.outputs.pr }}
+
+  start-with-tool-config-2: 
+    name: "Build 20.04 builder"
+    needs: [determine-actions, start-with-tool-config-1]
+    if: ${{ needs.determine-actions.outputs.build_strategy == '1' }}
+    uses: ./.github/workflows/builder-2004.yml
+    with:
+      is_pr: ${{ needs.determine-actions.outputs.pr }}
+
+  start-with-tool-config-3:
+    name: "Build 22.04 builder"
+    needs: [determine-actions, start-with-tool-config-1]
+    if: ${{ needs.determine-actions.outputs.build_strategy == '1' }}
+    uses: ./.github/workflows/builder-2204.yml
+    with:
+      is_pr: ${{ needs.determine-actions.outputs.pr }}
+
+  start-with-tool-config-4:
+    name: "Build psibase contributor"
+    needs: [determine-actions, start-with-tool-config-3]
+    if: ${{ needs.determine-actions.outputs.build_strategy == '1' }}
+    uses: ./.github/workflows/contributor.yml
+    with:
+      is_pr: ${{ needs.determine-actions.outputs.pr }}
+
+
+# CASE 2
+  run-only-2004-builder: 
+    name: "Build 20.04 builder"
+    needs: determine-actions
+    if: ${{ needs.determine-actions.outputs.build_strategy == '2' }}
+    uses: ./.github/workflows/builder-2004.yml
+    with:
+      is_pr: ${{ needs.determine-actions.outputs.pr }}
+
+
+# CASE 3
+  start-with-2204-builder-1:
+    name: "Build 22.04 builder"
+    needs: determine-actions
+    if: ${{ needs.determine-actions.outputs.build_strategy == '3' }}
+    uses: ./.github/workflows/builder-2204.yml
+    with:
+      is_pr: ${{ needs.determine-actions.outputs.pr }}
+
+  start-with-2204-builder-2:
+    name: "Build psibase contributor"
+    needs: [determine-actions, start-with-2204-builder-1]
+    if: ${{ needs.determine-actions.outputs.build_strategy == '3' }}
+    uses: ./.github/workflows/contributor.yml
+    with:
+      is_pr: ${{ needs.determine-actions.outputs.pr }}
+
+
+# CASE 4
+  start-with-builders-1:
+    name: "Build 20.04 builder"
+    needs: determine-actions
+    if: ${{ needs.determine-actions.outputs.build_strategy == '4' }}
+    uses: ./.github/workflows/builder-2004.yml
+    with:
+      is_pr: ${{ needs.determine-actions.outputs.pr }}
+
+  start-with-builders-2: 
+    name: "Build 22.04 builder"
+    needs: determine-actions
+    if: ${{ needs.determine-actions.outputs.build_strategy == '4' }}
+    uses: ./.github/workflows/builder-2204.yml
+    with:
+      is_pr: ${{ needs.determine-actions.outputs.pr }}
+
+  start-with-builders-3:
+    name: "Build psibase contributor"
+    needs: [determine-actions, start-with-builders-2]
+    if: ${{ needs.determine-actions.outputs.build_strategy == '4' }}
+    uses: ./.github/workflows/contributor.yml
+    with:
+      is_pr: ${{ needs.determine-actions.outputs.pr }}
+
+
+# CASE 5
+  run-only-contributor: 
+    name: "Build psibase contributor"
+    needs: determine-actions
+    if: ${{ needs.determine-actions.outputs.build_strategy == '5' }}
+    uses: ./.github/workflows/contributor.yml
+    with:
+      is_pr: ${{ needs.determine-actions.outputs.pr }}

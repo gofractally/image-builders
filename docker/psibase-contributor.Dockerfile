@@ -1,4 +1,7 @@
+ARG TOOL_CONFIG_IMAGE
 ARG BASE_IMAGE
+
+FROM ${TOOL_CONFIG_IMAGE} AS toolconfig
 FROM ${BASE_IMAGE}
 
 ARG TARGETARCH
@@ -83,9 +86,7 @@ RUN mkdir -p ${PSINODE_PATH}    \
     && git submodule update --init --recursive
 
 # Copy in tool config
-COPY --from=ghcr.io/gofractally/https-tool-config / /
-
-
+COPY --from=toolconfig / /
 
 # Expose ports
 ## Psinode
