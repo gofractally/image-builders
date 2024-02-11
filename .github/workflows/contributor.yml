@@ -81,6 +81,7 @@ jobs:
         run: |
           docker push localhost:5000/gofractally/psibase-builder-ubuntu-2204:latest
 
+      # Base image is hardcoded to Ubuntu version 22.04
       - name: Set BASE_IMAGE
         id: base_image
         run: |

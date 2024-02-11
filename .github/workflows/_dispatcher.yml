@@ -87,17 +87,19 @@ jobs:
     name: "Build 20.04 builder"
     needs: [determine-actions, start-with-tool-config-1]
     if: ${{ needs.determine-actions.outputs.build_strategy == '1' }}
-    uses: ./.github/workflows/builder-2004.yml
+    uses: ./.github/workflows/builder-ubuntu.yml
     with:
       is_pr: ${{ needs.determine-actions.outputs.pr }}
+      ubuntu_version: "2004"
 
   start-with-tool-config-3:
     name: "Build 22.04 builder"
     needs: [determine-actions, start-with-tool-config-1]
     if: ${{ needs.determine-actions.outputs.build_strategy == '1' }}
-    uses: ./.github/workflows/builder-2204.yml
+    uses: ./.github/workflows/builder-ubuntu.yml
     with:
       is_pr: ${{ needs.determine-actions.outputs.pr }}
+      ubuntu_version: "2204"
 
   start-with-tool-config-4:
     name: "Build psibase contributor"
@@ -113,9 +115,10 @@ jobs:
     name: "Build 20.04 builder"
     needs: determine-actions
     if: ${{ needs.determine-actions.outputs.build_strategy == '2' }}
-    uses: ./.github/workflows/builder-2004.yml
+    uses: ./.github/workflows/builder-ubuntu.yml
     with:
       is_pr: ${{ needs.determine-actions.outputs.pr }}
+      ubuntu_version: "2004"
 
 
 # CASE 3
@@ -123,9 +126,10 @@ jobs:
     name: "Build 22.04 builder"
     needs: determine-actions
     if: ${{ needs.determine-actions.outputs.build_strategy == '3' }}
-    uses: ./.github/workflows/builder-2204.yml
+    uses: ./.github/workflows/builder-ubuntu.yml
     with:
       is_pr: ${{ needs.determine-actions.outputs.pr }}
+      ubuntu_version: "2204"
 
   start-with-2204-builder-2:
     name: "Build psibase contributor"
@@ -141,17 +145,19 @@ jobs:
     name: "Build 20.04 builder"
     needs: determine-actions
     if: ${{ needs.determine-actions.outputs.build_strategy == '4' }}
-    uses: ./.github/workflows/builder-2004.yml
+    uses: ./.github/workflows/builder-ubuntu.yml
     with:
       is_pr: ${{ needs.determine-actions.outputs.pr }}
+      ubuntu_version: "2004"
 
   start-with-builders-2: 
     name: "Build 22.04 builder"
     needs: determine-actions
     if: ${{ needs.determine-actions.outputs.build_strategy == '4' }}
-    uses: ./.github/workflows/builder-2204.yml
+    uses: ./.github/workflows/builder-ubuntu.yml
     with:
       is_pr: ${{ needs.determine-actions.outputs.pr }}
+      ubuntu_version: "2204"
 
   start-with-builders-3:
     name: "Build psibase contributor"
