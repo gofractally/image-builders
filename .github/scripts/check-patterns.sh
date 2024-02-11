@@ -3,8 +3,8 @@
 ALL_CHANGED_FILES="$1"
 
 TOOL_CONFIG_PATTERNS="docker/tool-config.Dockerfile .github/workflows/tool-config.yml docker/conf/*"
-BUILDER_2004_PATTERNS="docker/ubuntu-2004-builder.Dockerfile .github/workflows/builder-2004.yml"
-BUILDER_2204_PATTERNS="docker/ubuntu-2204-builder.Dockerfile .github/workflows/builder-2204.yml"
+BUILDER_2004_PATTERNS="docker/ubuntu-2004-builder.Dockerfile .github/workflows/builder-ubuntu.yml"
+BUILDER_2204_PATTERNS="docker/ubuntu-2204-builder.Dockerfile .github/workflows/builder-ubuntu.yml"
 CONTRIB_PATTERNS="docker/psibase-contributor.Dockerfile .github/workflows/contributor.yml"
 
 matches_pattern() {
