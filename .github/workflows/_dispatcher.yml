@@ -13,19 +13,17 @@ on:
     paths:
       - "docker/**"
       - ".github/**"
-    paths-ignore:
-      - ".github/workflows/cli.yml"
-      - "docker/psibase.Dockerfile"
-      - "docker/psinode.Dockerfile"
+      - "!.github/workflows/cli.yml"
+      - "!docker/psibase.Dockerfile"
+      - "!docker/psinode.Dockerfile"
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - "docker/**"
       - ".github/**"
-    paths-ignore:
-      - ".github/workflows/cli.yml"
-      - "docker/psibase.Dockerfile"
-      - "docker/psinode.Dockerfile"
+      - "!.github/workflows/cli.yml"
+      - "!docker/psibase.Dockerfile"
+      - "!docker/psinode.Dockerfile"
 
 jobs:
   determine-actions:
