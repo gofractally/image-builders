@@ -65,7 +65,7 @@ jobs:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
           chmod +x .github/scripts/check-patterns.sh
-          echo "builder_strategy=$(./.github/scripts/check-patterns.sh ${ALL_CHANGED_FILES[@]})" >> $GITHUB_OUTPUT
+          echo "builder_strategy=$(./.github/scripts/check-patterns.sh $ALL_CHANGED_FILES)" >> $GITHUB_OUTPUT
 
 # Possible dispatching scenarios
 # 0: don't run anything

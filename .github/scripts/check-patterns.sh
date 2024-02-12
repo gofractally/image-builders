@@ -3,7 +3,8 @@
 # Enable globstar for recursive globbing
 shopt -s globstar
 
-ALL_CHANGED_FILES=("$@")
+ALL_CHANGED_FILES="$1"
+IFS=' ' read -r -a changed <<< $ALL_CHANGED_FILES
 
 TOOL_CONFIG_PATTERNS=("docker/tool-config.Dockerfile .github/workflows/tool-config.yml docker/conf/**")
 BUILDER_2004_PATTERNS=("docker/ubuntu-2004-builder.Dockerfile .github/workflows/builder-ubuntu.yml")
@@ -12,7 +13,7 @@ CONTRIB_PATTERNS=("docker/psibase-contributor.Dockerfile .github/workflows/contr
 
 matches_pattern() {
     local pattern="$1"
-    for file in ${ALL_CHANGED_FILES[@]}; do
+    for file in ${changed[@]}; do
         if [[ $file == $pattern ]]; then
             return 0 # Success
         fi
