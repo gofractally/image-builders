@@ -1,15 +1,20 @@
 #!/bin/bash
 
-ALL_CHANGED_FILES="$1"
+ALL_CHANGED_FILES=("$@")
 
 TOOL_CONFIG_PATTERNS="docker/tool-config.Dockerfile .github/workflows/tool-config.yml docker/conf/*"
 BUILDER_2004_PATTERNS="docker/ubuntu-2004-builder.Dockerfile .github/workflows/builder-ubuntu.yml"
 BUILDER_2204_PATTERNS="docker/ubuntu-2204-builder.Dockerfile .github/workflows/builder-ubuntu.yml"
 CONTRIB_PATTERNS="docker/psibase-contributor.Dockerfile .github/workflows/contributor.yml"
 
+echo "Inside script, got changed files:"
+for file in "${ALL_CHANGED_FILES[@]}"; do
+    echo "$file"
+done
+
 matches_pattern() {
     local pattern="$1"
-    for file in ${ALL_CHANGED_FILES}; do
+    for file in "${ALL_CHANGED_FILES[@]}"; do
         if [[ "$file" == $pattern ]]; then
             return 0 # Success
         fi
@@ -25,20 +30,26 @@ matches_pattern() {
 # 5: run contributor 
 # 0: don't run anything
 
-if matches_pattern "${TOOL_CONFIG_PATTERNS[@]}"; then
-    echo 1
-    exit
-fi
+for pattern in "${TOOL_CONFIG_PATTERNS[@]}"; do
+    if matches_pattern "$pattern"; then
+        echo 1
+        exit
+    fi
+done
 
 run_2004=false
-if matches_pattern "${BUILDER_2004_PATTERNS[@]}"; then
-    run_2004=true
-fi
+for pattern in "${BUILDER_2004_PATTERNS[@]}"; do
+    if matches_pattern "$pattern"; then
+        run_2004=true
+    fi
+done
 
 run_2204=false
-if matches_pattern "${BUILDER_2204_PATTERNS[@]}"; then
-    run_2204=true
-fi
+for pattern in "${BUILDER_2204_PATTERNS[@]}"; do
+    if matches_pattern "$pattern"; then
+        run_2204=true
+    fi
+done
 
 if $run_2004 && $run_2204; then
     echo 4
@@ -51,9 +62,11 @@ elif $run_2204; then
     exit
 fi
 
-if matches_pattern "${CONTRIB_PATTERNS[@]}"; then
-    echo 5
-    exit
-fi
+for pattern in "${CONTRIB_PATTERNS[@]}"; do
+    if matches_pattern "$pattern"; then
+        echo 5
+        exit
+    fi
+done
 
 echo 0
