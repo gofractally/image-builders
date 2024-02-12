@@ -93,7 +93,7 @@ jobs:
     if: ${{ needs.determine-actions.outputs.build_strategy == '1' }}
     uses: ./.github/workflows/tool-config.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr }}
+      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
 
   start-with-tool-config-2: 
     name: "Build 20.04 builder"
