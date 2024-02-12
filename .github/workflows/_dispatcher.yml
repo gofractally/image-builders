@@ -93,7 +93,7 @@ jobs:
     if: ${{ needs.determine-actions.outputs.build_strategy == '1' }}
     uses: ./.github/workflows/tool-config.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
+      is_pr: ${{ needs.determine-actions.outputs.pr == 'true'}}
 
   start-with-tool-config-2: 
     name: "Build 20.04 builder"
@@ -101,7 +101,7 @@ jobs:
     if: ${{ needs.determine-actions.outputs.build_strategy == '1' }}
     uses: ./.github/workflows/builder-ubuntu.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr }}
+      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
       ubuntu_version: "2004"
 
   start-with-tool-config-3:
@@ -110,7 +110,7 @@ jobs:
     if: ${{ needs.determine-actions.outputs.build_strategy == '1' }}
     uses: ./.github/workflows/builder-ubuntu.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr }}
+      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
       ubuntu_version: "2204"
 
   start-with-tool-config-4:
@@ -119,7 +119,7 @@ jobs:
     if: ${{ needs.determine-actions.outputs.build_strategy == '1' }}
     uses: ./.github/workflows/contributor.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr }}
+      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
 
 
 # CASE 2
@@ -129,7 +129,7 @@ jobs:
     if: ${{ needs.determine-actions.outputs.build_strategy == '2' }}
     uses: ./.github/workflows/builder-ubuntu.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr }}
+      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
       ubuntu_version: "2004"
 
 
@@ -140,7 +140,7 @@ jobs:
     if: ${{ needs.determine-actions.outputs.build_strategy == '3' }}
     uses: ./.github/workflows/builder-ubuntu.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr }}
+      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
       ubuntu_version: "2204"
 
   start-with-2204-builder-2:
@@ -149,7 +149,7 @@ jobs:
     if: ${{ needs.determine-actions.outputs.build_strategy == '3' }}
     uses: ./.github/workflows/contributor.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr }}
+      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
 
 
 # CASE 4
@@ -159,7 +159,7 @@ jobs:
     if: ${{ needs.determine-actions.outputs.build_strategy == '4' }}
     uses: ./.github/workflows/builder-ubuntu.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr }}
+      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
       ubuntu_version: "2004"
 
   start-with-builders-2: 
@@ -168,7 +168,7 @@ jobs:
     if: ${{ needs.determine-actions.outputs.build_strategy == '4' }}
     uses: ./.github/workflows/builder-ubuntu.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr }}
+      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
       ubuntu_version: "2204"
 
   start-with-builders-3:
@@ -177,7 +177,7 @@ jobs:
     if: ${{ needs.determine-actions.outputs.build_strategy == '4' }}
     uses: ./.github/workflows/contributor.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr }}
+      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
 
 
 # CASE 5
@@ -187,4 +187,4 @@ jobs:
     if: ${{ needs.determine-actions.outputs.build_strategy == '5' }}
     uses: ./.github/workflows/contributor.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr }}
+      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
