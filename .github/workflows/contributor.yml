@@ -83,6 +83,7 @@ jobs:
         run: |
           docker load -i builder-2204-image.tar
           docker push localhost:5000/gofractally/psibase-builder-ubuntu-2204:latest
+          rm builder-2204-image.tar
 
       - name: Download local tools image
         if: ${{ inputs.is_local_tools }}
@@ -94,6 +95,7 @@ jobs:
         run: |
           docker load -i https-tool-config-image.tar
           docker push localhost:5000/gofractally/https-tool-config:latest
+          rm https-tool-config-image.tar
 
       # Base image is hardcoded to Ubuntu version 22.04
       - name: Set docker image paths
@@ -129,7 +131,6 @@ jobs:
       - name: (PR only) - Save docker image to archive
         if: ${{ inputs.is_pr }}
         run: |
-          rm builder-2204-image.tar
           docker pull ${{ steps.prep.outputs.tags }}
           docker save ${{ steps.prep.outputs.tags }} -o pr-psibase_contributor.tar
 
@@ -137,6 +138,6 @@ jobs:
         if: ${{ inputs.is_pr }}
         uses: actions/upload-artifact@v4
         with:
-          name: pr-psibase_contributor
-          path: pr-psibase_contributor.tar
+          name: psibase_contributor
+          path: psibase_contributor.tar
           retention-days: 1
