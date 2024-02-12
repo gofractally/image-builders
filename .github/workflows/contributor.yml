@@ -11,6 +11,16 @@ on:
         type: boolean
         required: true
         default: true
+      is_local_tools: 
+        description: "Is 'true' if the tools image dependency should be satisfied by a local image"
+        type: boolean
+        required: true
+        default: false
+      is_local_base:
+        description: "Is 'true' if the base image dependency should be satisfied by a local image"
+        type: boolean
+        required: true
+        default: false
 
 jobs:
   psibase-contributor:
@@ -57,40 +67,50 @@ jobs:
           driver-opts: network=host
 
       - name: Login in to registry
-        if: ${{ !inputs.is_pr }}
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: (PR only) - Download contributor base image from artifact
-        if: ${{ inputs.is_pr }}
+      - name: Download local base image
+        if: ${{ inputs.is_local_base }}
         uses: actions/download-artifact@v4
         with:
           name: builder-2204-image
-
-      - name: (PR only) - Install downloaded image to docker
-        if: ${{ inputs.is_pr }}
+      - name: Install local base image
+        if: ${{ inputs.is_local_base }}
         run: |
           docker load -i builder-2204-image.tar
-          echo "Local docker images:"
-          docker images
-      
-      - name: (PR only) - Push image to local registry
-        run: |
           docker push localhost:5000/gofractally/psibase-builder-ubuntu-2204:latest
 
-      # Base image is hardcoded to Ubuntu version 22.04
-      - name: Set BASE_IMAGE
-        id: base_image
+      - name: Download local tools image
+        if: ${{ inputs.is_local_tools }}
+        uses: actions/download-artifact@v4
+        with:
+          name: https-tool-config-image
+      - name: Install local tools image
+        if: ${{ inputs.is_local_tools }}
         run: |
-          if [[ "${{ inputs.is_pr }}" == "true" ]]; then
+          docker load -i https-tool-config-image.tar
+          docker push localhost:5000/gofractally/https-tool-config:latest
+
+      # Base image is hardcoded to Ubuntu version 22.04
+      - name: Set docker image paths
+        id: image_paths
+        run: |
+          if [[ "${{ inputs.is_local_base }}" == "true" ]]; then
             echo "BASE_IMAGE=localhost:5000/gofractally/psibase-builder-ubuntu-2204:latest" >> $GITHUB_OUTPUT
+          else
+            latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/psibase-builder-ubuntu-2204")
+            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${latest_tag}" >> $GITHUB_OUTPUT
+          fi
+
+          if [[ "${{ inputs.is_local_tools }}" == "true" ]]; then
             echo "TOOL_CONFIG_IMAGE=localhost:5000/gofractally/https-tool-config:latest" >> $GITHUB_OUTPUT
           else
-            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${{ github.sha }}" >> $GITHUB_OUTPUT
-            echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/https-tool-config:${{ github.sha }}" >> $GITHUB_OUTPUT
+            latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/https-tool-config")
+            echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/https-tool-config:${latest_tag}" >> $GITHUB_OUTPUT
           fi
 
       - name: Build & Publish Image
@@ -99,8 +119,8 @@ jobs:
           context: .
           push: true
           build-args: |
-            BASE_IMAGE=${{ steps.base_image.outputs.BASE_IMAGE }}
-            TOOL_CONFIG_IMAGE=${{ steps.base_image.outputs.TOOL_CONFIG_IMAGE }}
+            BASE_IMAGE=${{ steps.image_paths.outputs.BASE_IMAGE }}
+            TOOL_CONFIG_IMAGE=${{ steps.image_paths.outputs.TOOL_CONFIG_IMAGE }}
           file: docker/psibase-contributor.Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
           platforms: linux/amd64

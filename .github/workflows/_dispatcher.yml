@@ -64,7 +64,6 @@ jobs:
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
-          chmod +x .github/scripts/check-patterns.sh
           echo "builder_strategy=$(./.github/scripts/check-patterns.sh "$ALL_CHANGED_FILES")" >> $GITHUB_OUTPUT
 
 # Possible dispatching scenarios
@@ -120,7 +119,8 @@ jobs:
     uses: ./.github/workflows/contributor.yml
     with:
       is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
-
+      is_local_tools: true
+      is_local_base: true
 
 # CASE 2
   run-only-2004-builder: 
@@ -150,6 +150,8 @@ jobs:
     uses: ./.github/workflows/contributor.yml
     with:
       is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
+      is_local_tools: false
+      is_local_base: true
 
 
 # CASE 4
@@ -178,6 +180,8 @@ jobs:
     uses: ./.github/workflows/contributor.yml
     with:
       is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
+      is_local_tools: false
+      is_local_base: true
 
 
 # CASE 5
@@ -188,3 +192,5 @@ jobs:
     uses: ./.github/workflows/contributor.yml
     with:
       is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
+      is_local_tools: false
+      is_local_base: false
