@@ -21,51 +21,41 @@ matches_pattern() {
     return 1
 }
 
-# Possible dispatching cases and their return values
-# 1: run tool config (and all dependent workflows)
-# 2: run 2004 builder
-# 3: run 2204 builder (and dependent)
-# 4: run both builders (and dependent)
-# 5: run contributor 
-# 0: don't run anything
 
+run_tc="0"
 for pattern in ${TOOL_CONFIG_PATTERNS[@]}; do
     if matches_pattern $pattern; then
-        echo 1
-        exit
+        run_tc="1"
+        break
     fi
 done
 
-run_2004=false
+run_2004="0"
 for pattern in ${BUILDER_2004_PATTERNS[@]}; do
     if matches_pattern $pattern; then
-        run_2004=true
+        run_2004="1"
+        break
     fi
 done
 
-run_2204=false
+run_2204="0"
 for pattern in ${BUILDER_2204_PATTERNS[@]}; do
     if matches_pattern $pattern; then
-        run_2204=true
+        run_2204="1"
+        break
     fi
 done
 
-if $run_2004 && $run_2204; then
-    echo 4
-    exit
-elif $run_2004; then
-    echo 2
-    exit
-elif $run_2204; then
-    echo 3
-    exit
+run_contrib="0"
+if $run_tc || $run_2204; then
+    run_contrib="1"
+else
+    for pattern in ${CONTRIB_PATTERNS[@]}; do
+        if matches_pattern $pattern; then
+            run_contrib="1"
+            break
+        fi
+    done
 fi
 
-for pattern in ${CONTRIB_PATTERNS[@]}; do
-    if matches_pattern $pattern; then
-        echo 5
-        exit
-    fi
-done
-
-echo 0
+echo "${run_2004} ${run_tc}${run_2204}${run_contrib}"
