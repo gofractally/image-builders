@@ -38,36 +38,31 @@ jobs:
           submodules: false
           fetch-depth: 0
 
-      - name: Free up runner space
-        run: bash ${GITHUB_WORKSPACE}/.github/scripts/free-disk-space.sh
-
       - name: Preparation
         id: prep
         run: |
           OWNER="${{ github.repository_owner }}"
           IMAGE="psibase-contributor"
-          if [[ "${{ inputs.is_pr }}" == "true" ]]; then
-            REGISTRY="localhost:5000"
-            TAG="latest"
-          else
-            REGISTRY="ghcr.io"
-            TAG="${{ github.sha }}"
-          fi
+          REGISTRY="ghcr.io"
+          TAG="${{ github.sha }}"
           TAGS="${REGISTRY}/${OWNER}/${IMAGE}:${TAG}"
           echo "tags=${TAGS,,}" >> $GITHUB_OUTPUT
 
-      - name: Building ${{ steps.prep.outputs.tags }}
-        run: true
+      - name: Config docker buildx
+        if: ${{ !inputs.is_pr }}
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
 
-      - name: (PR only) - Config docker buildx network
+      - name: (PR only) - Config docker buildx host network
         if: ${{ inputs.is_pr }}
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
         with:
           buildkitd-flags: --debug
           driver-opts: network=host
 
       - name: Login in to registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -78,63 +73,71 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: builder-2204-image
-      - name: Install local base image
-        if: ${{ inputs.is_local_base }}
+      - name: Set BASE_IMAGE
+        id: base_img
         run: |
-          docker load -i builder-2204-image.tar
-          docker push localhost:5000/gofractally/psibase-builder-ubuntu-2204:latest
-          rm builder-2204-image.tar
+          if [[ "${{ inputs.is_local_base }}" == "true" ]]; then
+            docker load -i builder-2204-image.tar
+            rm builder-2204-image.tar
+            IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
+            LOCAL_TAG=localhost:5000/local_base_image:latest
+            docker tag ${IMAGE} ${LOCAL_TAG}
+            docker push ${LOCAL_TAG}
+            echo "BASE_IMAGE=${LOCAL_TAG}" >> $GITHUB_OUTPUT
+          else
+            latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/psibase-builder-ubuntu-2204")
+            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${latest_tag}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Download local tools image
         if: ${{ inputs.is_local_tools }}
         uses: actions/download-artifact@v4
         with:
           name: https-tool-config-image
-      - name: Install local tools image
-        if: ${{ inputs.is_local_tools }}
+      - name: Set TOOL_CONFIG_IMAGE
+        id: tool_cfg_img
         run: |
-          docker load -i https-tool-config-image.tar
-          docker push localhost:5000/gofractally/https-tool-config:latest
-          rm https-tool-config-image.tar
-
-      # Base image is hardcoded to Ubuntu version 22.04
-      - name: Set docker image paths
-        id: image_paths
-        run: |
-          if [[ "${{ inputs.is_local_base }}" == "true" ]]; then
-            echo "BASE_IMAGE=localhost:5000/gofractally/psibase-builder-ubuntu-2204:latest" >> $GITHUB_OUTPUT
-          else
-            latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/psibase-builder-ubuntu-2204")
-            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${latest_tag}" >> $GITHUB_OUTPUT
-          fi
-
           if [[ "${{ inputs.is_local_tools }}" == "true" ]]; then
-            echo "TOOL_CONFIG_IMAGE=localhost:5000/gofractally/https-tool-config:latest" >> $GITHUB_OUTPUT
+            docker load -i https-tool-config-image.tar
+            rm https-tool-config-image.tar
+            IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
+            LOCAL_TAG=localhost:5000/local_tools_image:latest
+            docker tag ${IMAGE} ${LOCAL_TAG}
+            docker push ${LOCAL_TAG}
+            echo "TOOL_CONFIG_IMAGE=${LOCAL_TAG}" >> $GITHUB_OUTPUT
           else
             latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/https-tool-config")
             echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/https-tool-config:${latest_tag}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build & Publish Image
+      - name: Build & publish ${{ steps.prep.outputs.tags }}
+        if: ${{ !inputs.is_pr }}
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
           build-args: |
-            BASE_IMAGE=${{ steps.image_paths.outputs.BASE_IMAGE }}
-            TOOL_CONFIG_IMAGE=${{ steps.image_paths.outputs.TOOL_CONFIG_IMAGE }}
+            BASE_IMAGE=${{ steps.base_img.outputs.BASE_IMAGE }}
+            TOOL_CONFIG_IMAGE=${{ steps.tool_cfg_img.outputs.TOOL_CONFIG_IMAGE }}
           file: docker/psibase-contributor.Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
           platforms: linux/amd64
           outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase development environment
 
-      - name: (PR only) - Save docker image to archive
+      - name: (PR Only) - Build image archive
         if: ${{ inputs.is_pr }}
-        run: |
-          docker pull ${{ steps.prep.outputs.tags }}
-          docker save ${{ steps.prep.outputs.tags }} -o pr-psibase_contributor.tar
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          build-args: |
+            BASE_IMAGE=${{ steps.base_img.outputs.BASE_IMAGE }}
+            TOOL_CONFIG_IMAGE=${{ steps.tool_cfg_img.outputs.TOOL_CONFIG_IMAGE }}
+          file: docker/psibase-contributor.Dockerfile
+          tags: ${{ steps.prep.outputs.tags }}
+          platforms: linux/amd64
+          outputs: type=docker,dest=psibase_contributor.tar
 
-      - name: (PR only) - Upload docker image archive as artifact
+      - name: (PR only) - Upload image archive as artifact
         if: ${{ inputs.is_pr }}
         uses: actions/upload-artifact@v4
         with:
