@@ -47,7 +47,7 @@ for pattern in ${BUILDER_2204_PATTERNS[@]}; do
 done
 
 run_contrib="0"
-if $run_tc || $run_2204; then
+if [[ "$run_tc" == "1" ]] || [[ "$run_2204" == "1" ]]; then
     run_contrib="1"
 else
     for pattern in ${CONTRIB_PATTERNS[@]}; do
