@@ -10,7 +10,7 @@ This workflow builds images for the `psinode` and `psibase` CLI tools.
 
 ### Input variables
 
-* `version` - Must be set to the name of the git tag on which the resulting CLI images should be based.
+* `version` - Must be set to the name of the git release tag of psinode on which the resulting CLI images should be based. 
 
 ### How to run
 
