@@ -71,8 +71,6 @@ jobs:
     needs: determine-actions
     if: ${{ needs.determine-actions.outputs.run_tc == '1' }}
     uses: ./.github/workflows/tool-config.yml
-    with:
-      is_pr: ${{ github.event_name == 'pull_request' }}
 
   build-2004:
     name: "Build 20.04 builder"
@@ -80,7 +78,6 @@ jobs:
     if: ${{ needs.determine-actions.outputs.run_2004 == '1' }}
     uses: ./.github/workflows/builder-ubuntu.yml
     with:
-      is_pr: ${{ github.event_name == 'pull_request' }}
       ubuntu_version: "2004"
 
   build-2204:
@@ -89,7 +86,6 @@ jobs:
     if: ${{ needs.determine-actions.outputs.run_2204 == '1' }}
     uses: ./.github/workflows/builder-ubuntu.yml
     with:
-      is_pr: ${{ github.event_name == 'pull_request' }}
       ubuntu_version: "2204"
 
   build-contributor:
@@ -98,6 +94,5 @@ jobs:
     if: ${{ needs.determine-actions.outputs.run_contrib == '1' }}
     uses: ./.github/workflows/contributor.yml
     with:
-      is_pr: ${{ github.event_name == 'pull_request' }}
-      is_local_tools: ${{ needs.build-tool-config.result == 'success' && github.event_name == 'pull_request'}} 
-      is_local_base: ${{ needs.build-2204.result == 'success' && github.event_name == 'pull_request'}} 
+      new_tools: ${{ needs.build-tool-config.result == 'success'}} 
+      new_base: ${{ needs.build-2204.result == 'success'}} 

@@ -6,18 +6,13 @@ env:
 on:
   workflow_call:
     inputs:
-      is_pr:
-        description: "Is 'true' if running in the context of a PR"
-        type: boolean
-        required: true
-        default: true
-      is_local_tools: 
-        description: "Is 'true' if the tools image dependency should be satisfied by a local image"
+      new_tools: 
+        description: "Whether a newly generated tools image should be used for this workflow"
         type: boolean
         required: true
         default: false
-      is_local_base:
-        description: "Is 'true' if the base image dependency should be satisfied by a local image"
+      new_base:
+        description: "Whether a newly generated base image should be used for this workflow"
         type: boolean
         required: true
         default: false
@@ -49,13 +44,13 @@ jobs:
           echo "tags=${TAGS,,}" >> $GITHUB_OUTPUT
 
       - name: Config docker buildx
-        if: ${{ !inputs.is_pr }}
+        if: ${{ github.event_name != 'pull_request' }}
         uses: docker/setup-buildx-action@v3
         with:
           buildkitd-flags: --debug
 
       - name: (PR only) - Config docker buildx host network
-        if: ${{ inputs.is_pr }}
+        if: ${{ github.event_name == 'pull_request' }}
         uses: docker/setup-buildx-action@v3
         with:
           buildkitd-flags: --debug
@@ -69,14 +64,17 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download local base image
-        if: ${{ inputs.is_local_base }}
+        if: ${{ inputs.new_base && github.event_name == 'pull_request' }}
         uses: actions/download-artifact@v4
         with:
           name: builder-2204-image
       - name: Set BASE_IMAGE
         id: base_img
+        env:
+          NEW_BASE: ${{ inputs.new_base }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
         run: |
-          if [[ "${{ inputs.is_local_base }}" == "true" ]]; then
+          if [[ "$NEW_BASE" == "true" && "$IS_PR" == "true" ]]; then
             docker load -i builder-2204-image.tar
             rm builder-2204-image.tar
             IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
@@ -84,20 +82,25 @@ jobs:
             docker tag ${IMAGE} ${LOCAL_TAG}
             docker push ${LOCAL_TAG}
             echo "BASE_IMAGE=${LOCAL_TAG}" >> $GITHUB_OUTPUT
+          elif [[ "$NEW_BASE" == "true" ]]; then
+            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${{ github.sha }}" >> $GITHUB_OUTPUT
           else
             latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/psibase-builder-ubuntu-2204")
             echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${latest_tag}" >> $GITHUB_OUTPUT
           fi
 
       - name: Download local tools image
-        if: ${{ inputs.is_local_tools }}
+        if: ${{ inputs.new_tools && github.event_name == 'pull_request' }}
         uses: actions/download-artifact@v4
         with:
           name: https-tool-config-image
       - name: Set TOOL_CONFIG_IMAGE
         id: tool_cfg_img
+        env:
+          NEW_TOOLS: ${{ inputs.new_tools }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
         run: |
-          if [[ "${{ inputs.is_local_tools }}" == "true" ]]; then
+          if [[ "$NEW_TOOLS" == "true" && "$IS_PR" == "true" ]]; then
             docker load -i https-tool-config-image.tar
             rm https-tool-config-image.tar
             IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
@@ -105,13 +108,15 @@ jobs:
             docker tag ${IMAGE} ${LOCAL_TAG}
             docker push ${LOCAL_TAG}
             echo "TOOL_CONFIG_IMAGE=${LOCAL_TAG}" >> $GITHUB_OUTPUT
+          elif [[ "$NEW_TOOLS" == "true" ]]; then
+            echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/https-tool-config:${{ github.sha }}" >> $GITHUB_OUTPUT
           else
             latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/https-tool-config")
             echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/https-tool-config:${latest_tag}" >> $GITHUB_OUTPUT
           fi
 
       - name: Build & publish ${{ steps.prep.outputs.tags }}
-        if: ${{ !inputs.is_pr }}
+        if: ${{ github.event_name != 'pull_request' }}
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -125,7 +130,7 @@ jobs:
           outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase development environment
 
       - name: (PR Only) - Build image archive
-        if: ${{ inputs.is_pr }}
+        if: ${{ github.event_name == 'pull_request' }}
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -138,7 +143,7 @@ jobs:
           outputs: type=docker,dest=psibase_contributor.tar
 
       - name: (PR only) - Upload image archive as artifact
-        if: ${{ inputs.is_pr }}
+        if: ${{ github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@v4
         with:
           name: psibase_contributor
