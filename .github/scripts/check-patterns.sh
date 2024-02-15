@@ -58,4 +58,4 @@ else
     done
 fi
 
-echo "${run_2004} ${run_tc}${run_2204}${run_contrib}"
+echo "${run_tc} ${run_2004} ${run_2204} ${run_contrib}"

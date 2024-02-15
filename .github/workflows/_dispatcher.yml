@@ -30,9 +30,10 @@ jobs:
     name: Set up the dispatching variables
     runs-on: ubuntu-latest
     outputs:
-      pr: ${{ steps.conditionals.outputs.pr }}
+      run_tc: ${{ steps.schedule-builders.outputs.run_tc }}
       run_2004: ${{ steps.schedule-builders.outputs.run_2004 }}
-      build_strategy: ${{ steps.schedule-builders.outputs.build_strategy }}
+      run_2204: ${{ steps.schedule-builders.outputs.run_2204 }}
+      run_contrib: ${{ steps.schedule-builders.outputs.run_contrib }}
 
     steps:
       - name: Checkout code
@@ -41,18 +42,11 @@ jobs:
           submodules: false
           fetch-depth: 0
 
-      - name: Determine artifact registry
-        id: conditionals
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "pr=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v42
 
-      - name: Print changed files
+      - name: (Debug) Print changed files
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
@@ -66,126 +60,44 @@ jobs:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
           necessary_jobs=$(./.github/scripts/check-patterns.sh "$ALL_CHANGED_FILES")  
-
-          declare -A strategies
-          strategies["000"]="0"
-          strategies["001"]="1"
-          strategies["010"]="2"
-          strategies["011"]="2"
-          strategies["100"]="3"
-          strategies["101"]="3"
-          strategies["110"]="4"
-          strategies["111"]="4"
-
-          read -r run_2004 strat_key <<< "$output"
+          read -r run_tc run_2004 run_2204 run_contrib <<< "$output"
+          echo "run_tc=${run_tc}" >> $GITHUB_OUTPUT
           echo "run_2004=${run_2004}" >> $GITHUB_OUTPUT
-          echo "build_strategy=${strategies[strat_key]}" >> $GITHUB_OUTPUT
+          echo "run_2204=${run_2204}" >> $GITHUB_OUTPUT
+          echo "run_contrib=${run_contrib}" >> $GITHUB_OUTPUT
 
-# Possible dispatching scenarios (excluding 2004 builder which is fully independent)
-# 0: don't run anything
-# 1: run contributor
-# 2: run 2204_builder & contributor
-# 3: run tool_config & contributor
-# 4: run tool_config & 2204_builder & contributor
+  build-tool-config:
+    name: "Build tool config"
+    needs: determine-actions
+    if: ${{ needs.determine-actions.outputs.run_tc == '1' }}
+    uses: ./.github/workflows/tool-config.yml
+    with:
+      is_pr: ${{ github.event_name == 'pull_request' }}
 
-# Handle 2004 builder independently
-  handle-2004:
+  build-2004:
     name: "Build 20.04 builder"
     needs: determine-actions
     if: ${{ needs.determine-actions.outputs.run_2004 == '1' }}
     uses: ./.github/workflows/builder-ubuntu.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
+      is_pr: ${{ github.event_name == 'pull_request' }}
       ubuntu_version: "2004"
 
-# CASE 0
-  do-nothing:
-    name: "Not building anything"
+  build-2204:
+    name: "Build 22.04 builder"
     needs: determine-actions
-    if: ${{ needs.determine-actions.outputs.build_strategy == '0' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: noop
-        run: true
+    if: ${{ needs.determine-actions.outputs.run_2204 == '1' }}
+    uses: ./.github/workflows/builder-ubuntu.yml
+    with:
+      is_pr: ${{ github.event_name == 'pull_request' }}
+      ubuntu_version: "2204"
 
-
-# CASE 1
   build-contributor:
     name: "Build contributor"
-    needs: determine-actions
-    if: ${{ needs.determine-actions.outputs.build_strategy == '1' }}
+    needs: [determine-actions, build-tool-config, build-2204]
+    if: ${{ needs.determine-actions.outputs.run_contrib == '1' }}
     uses: ./.github/workflows/contributor.yml
     with:
-      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
-      is_local_tools: false
-      is_local_base: false
-
-
-# CASE 2
-  build-2204-and-contrib-1:
-    name: "Build 22.04 builder"
-    needs: determine-actions
-    if: ${{ needs.determine-actions.outputs.build_strategy == '2' }}
-    uses: ./.github/workflows/builder-ubuntu.yml
-    with:
-      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
-      ubuntu_version: "2204"
-
-  build-2204-and-contrib-2:
-    name: "Build psibase contributor"
-    needs: [determine-actions, build-2204-and-contrib-1]
-    if: ${{ needs.determine-actions.outputs.build_strategy == '2' }}
-    uses: ./.github/workflows/contributor.yml
-    with:
-      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
-      is_local_tools: false
-      is_local_base: true
-
-
-# CASE 3
-  build-tc-and-contrib-1: 
-    name: "Build tool config"
-    needs: determine-actions
-    if: ${{ needs.determine-actions.outputs.build_strategy == '3' }}
-    uses: ./.github/workflows/tool-config.yml
-    with:
-      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
-
-  build-tc-and-contrib-2:
-    name: "Build psibase contributor"
-    needs: [determine-actions, build-tc-and-contrib-1]
-    if: ${{ needs.determine-actions.outputs.build_strategy == '3' }}
-    uses: ./.github/workflows/contributor.yml
-    with:
-      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
-      is_local_tools: true
-      is_local_base: false
-
-
-# CASE 4
-  build-all-1:
-    name: "Build tool config"
-    needs: determine-actions
-    if: ${{ needs.determine-actions.outputs.build_strategy == '4' }}
-    uses: ./.github/workflows/tool-config.yml
-    with:
-      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
-
-  build-all-2:
-    name: "Build 22.04 builder"
-    needs: determine-actions
-    if: ${{ needs.determine-actions.outputs.build_strategy == '4' }}
-    uses: ./.github/workflows/builder-ubuntu.yml
-    with:
-      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
-      ubuntu_version: "2204"
-
-  build-all-3:
-    name: "Build psibase contributor"
-    needs: [determine-actions, build-all-1, build-all-2]
-    if: ${{ needs.determine-actions.outputs.build_strategy == '4' }}
-    uses: ./.github/workflows/contributor.yml
-    with:
-      is_pr: ${{ needs.determine-actions.outputs.pr == 'true' }}
-      is_local_tools: true
-      is_local_base: true
+      is_pr: ${{ github.event_name == 'pull_request' }}
+      is_local_tools: ${{ needs.build-tool-config.result == 'success' && github.event_name == 'pull_request'}} 
+      is_local_base: ${{ needs.build-2204.result == 'success' && github.event_name == 'pull_request'}} 
