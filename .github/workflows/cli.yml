@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: false
           fetch-depth: 0
@@ -49,7 +49,7 @@ jobs:
           echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/http-tool-config:${latest_tag}" >> $GITHUB_OUTPUT
 
       - name: Build & Publish Image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           build-args: |
             RELEASE_TAG=${{ github.event.inputs.version }}
@@ -66,7 +66,7 @@ jobs:
     needs: psinode-cli-builder
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: false
           fetch-depth: 0
@@ -94,7 +94,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Publish Image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           build-args: |
             psinode_version=${{ github.event.inputs.version }}
