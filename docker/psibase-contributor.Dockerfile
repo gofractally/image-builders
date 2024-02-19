@@ -1,5 +1,8 @@
-ARG BUILDER_TAG
-FROM ghcr.io/gofractally/psibase-builder-ubuntu-2204:${BUILDER_TAG}
+ARG TOOL_CONFIG_IMAGE
+ARG BASE_IMAGE
+
+FROM ${TOOL_CONFIG_IMAGE} AS toolconfig
+FROM ${BASE_IMAGE}
 
 ARG TARGETARCH
 ARG SOFTHSM_PIN="Ch4ng#Me!"
@@ -83,7 +86,7 @@ RUN mkdir -p ${PSINODE_PATH}    \
     && git submodule update --init --recursive
 
 # Copy in tool config
-COPY --from=ghcr.io/gofractally/https-tool-config / /
+COPY --from=toolconfig / /
 
 # Install nice-to-have rust/wasm tooling
 RUN $CARGO_HOME/bin/cargo install \

@@ -25,29 +25,35 @@ jobs:
         run: |
           REGISTRY="ghcr.io"
           IMAGE="${REGISTRY}/${{ github.repository_owner }}/psinode"
-          TAGS="${IMAGE}:${{ github.sha }},${IMAGE}:${{ github.event.inputs.version }}"
+          TAGS="${IMAGE}:${{ github.event.inputs.version }}"
           echo "tags=${TAGS,,}" >> $GITHUB_OUTPUT
-      - name: Showtag
-        id: showtag
-        run: echo ${{ steps.prep.outputs.tags }}
+      - name: Building ${{ steps.prep.outputs.tags }}
+        run: true
 
       - name: Docker Buildx setup
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
         with:
           buildkitd-flags: --debug
 
       - name: Login in to registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set TOOL_CONFIG version
+        id: tool_cfg_img
+        run: |
+          latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/http-tool-config")
+          echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/http-tool-config:${latest_tag}" >> $GITHUB_OUTPUT
 
       - name: Build & Publish Image
         uses: docker/build-push-action@v4
         with:
           build-args: |
             RELEASE_TAG=${{ github.event.inputs.version }}
+            TOOL_CONFIG_IMAGE=${{ steps.tool_cfg_img.outputs.TOOL_CONFIG_IMAGE }}
           context: .
           push: true
           no-cache: true
@@ -69,19 +75,19 @@ jobs:
         run: |
           REGISTRY="ghcr.io"
           IMAGE="${REGISTRY}/${{ github.repository_owner }}/psibase"
-          TAGS="${IMAGE}:${{ github.sha }},${IMAGE}:${{ github.event.inputs.version }}"
+          TAGS="${IMAGE}:${{ github.event.inputs.version }}"
           echo "tags=${TAGS,,}" >> $GITHUB_OUTPUT
       - name: Showtag
         id: showtag
         run: echo ${{ steps.prep.outputs.tags }}
 
       - name: Docker Buildx setup
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
         with:
           buildkitd-flags: --debug
 
       - name: Login in to registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}

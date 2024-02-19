@@ -1,0 +1,151 @@
+name: Generate contributor image
+
+env:
+  GITHUB_OUTPUT: ""
+
+on:
+  workflow_call:
+    inputs:
+      new_tools: 
+        description: "Whether a newly generated tools image should be used for this workflow"
+        type: boolean
+        required: true
+        default: false
+      new_base:
+        description: "Whether a newly generated base image should be used for this workflow"
+        type: boolean
+        required: true
+        default: false
+
+jobs:
+  psibase-contributor:
+    name: psibase-contributor
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: false
+          fetch-depth: 0
+
+      - name: Preparation
+        id: prep
+        run: |
+          OWNER="${{ github.repository_owner }}"
+          IMAGE="psibase-contributor"
+          REGISTRY="ghcr.io"
+          TAG="${{ github.sha }}"
+          TAGS="${REGISTRY}/${OWNER}/${IMAGE}:${TAG}"
+          echo "tags=${TAGS,,}" >> $GITHUB_OUTPUT
+
+      - name: Config docker buildx
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
+
+      - name: (PR only) - Config docker buildx host network
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
+          driver-opts: network=host
+
+      - name: Login in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download local base image
+        if: ${{ inputs.new_base && github.event_name == 'pull_request' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: builder-2204-image
+      - name: Set BASE_IMAGE
+        id: base_img
+        env:
+          NEW_BASE: ${{ inputs.new_base }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
+        run: |
+          if [[ "$NEW_BASE" == "true" && "$IS_PR" == "true" ]]; then
+            docker load -i builder-2204-image.tar
+            rm builder-2204-image.tar
+            IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
+            LOCAL_TAG=localhost:5000/local_base_image:latest
+            docker tag ${IMAGE} ${LOCAL_TAG}
+            docker push ${LOCAL_TAG}
+            echo "BASE_IMAGE=${LOCAL_TAG}" >> $GITHUB_OUTPUT
+          elif [[ "$NEW_BASE" == "true" ]]; then
+            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${{ github.sha }}" >> $GITHUB_OUTPUT
+          else
+            latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/psibase-builder-ubuntu-2204")
+            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${latest_tag}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download local tools image
+        if: ${{ inputs.new_tools && github.event_name == 'pull_request' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: https-tool-config-image
+      - name: Set TOOL_CONFIG_IMAGE
+        id: tool_cfg_img
+        env:
+          NEW_TOOLS: ${{ inputs.new_tools }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
+        run: |
+          if [[ "$NEW_TOOLS" == "true" && "$IS_PR" == "true" ]]; then
+            docker load -i https-tool-config-image.tar
+            rm https-tool-config-image.tar
+            IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
+            LOCAL_TAG=localhost:5000/local_tools_image:latest
+            docker tag ${IMAGE} ${LOCAL_TAG}
+            docker push ${LOCAL_TAG}
+            echo "TOOL_CONFIG_IMAGE=${LOCAL_TAG}" >> $GITHUB_OUTPUT
+          elif [[ "$NEW_TOOLS" == "true" ]]; then
+            echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/https-tool-config:${{ github.sha }}" >> $GITHUB_OUTPUT
+          else
+            latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/https-tool-config")
+            echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/https-tool-config:${latest_tag}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build & publish ${{ steps.prep.outputs.tags }}
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          build-args: |
+            BASE_IMAGE=${{ steps.base_img.outputs.BASE_IMAGE }}
+            TOOL_CONFIG_IMAGE=${{ steps.tool_cfg_img.outputs.TOOL_CONFIG_IMAGE }}
+          file: docker/psibase-contributor.Dockerfile
+          tags: ${{ steps.prep.outputs.tags }}
+          platforms: linux/amd64
+          outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase development environment
+
+      - name: (PR Only) - Build image archive
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          build-args: |
+            BASE_IMAGE=${{ steps.base_img.outputs.BASE_IMAGE }}
+            TOOL_CONFIG_IMAGE=${{ steps.tool_cfg_img.outputs.TOOL_CONFIG_IMAGE }}
+          file: docker/psibase-contributor.Dockerfile
+          tags: ${{ steps.prep.outputs.tags }}
+          platforms: linux/amd64
+          outputs: type=docker,dest=psibase_contributor.tar
+
+      - name: (PR only) - Upload image archive as artifact
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: psibase_contributor
+          path: psibase_contributor.tar
+          retention-days: 1

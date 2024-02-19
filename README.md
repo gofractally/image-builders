@@ -1,4 +1,4 @@
-# image-builders
+# Docker images
 
 This repo has the GitHub Actions necessary to build various docker images.
 
@@ -71,3 +71,7 @@ The `psibase` CLI tool may remotely connect to any publicly exposed psinode usin
 ```
 psibase -s <PRIV_KEY> -a http://<PSINODE_URL>:8080 create bob --key <PUBKEY> --sender alice
 ```
+
+# Github workflows
+
+For more information on the CI/CD workflows that are responsible for generating and uploading all of the aforementioned docker images, see [WORKFLOWS.md](./WORKFLOWS.md).

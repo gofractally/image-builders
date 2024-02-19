@@ -1,0 +1,98 @@
+# This file is the dispatcher for the rest of the workflows that have complex dependencies.
+# The `cli.yml` doesn't need to be dispatched via this dispatcher because it is only run manually.
+
+name: Dispatcher
+
+env:
+  GITHUB_OUTPUT: ""
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docker/**"
+      - ".github/**"
+      - "!.github/workflows/cli.yml"
+      - "!docker/psibase.Dockerfile"
+      - "!docker/psinode.Dockerfile"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "docker/**"
+      - ".github/**"
+      - "!.github/workflows/cli.yml"
+      - "!docker/psibase.Dockerfile"
+      - "!docker/psinode.Dockerfile"
+
+jobs:
+  determine-actions:
+    name: Set up the dispatching variables
+    runs-on: ubuntu-latest
+    outputs:
+      run_tc: ${{ steps.schedule-builders.outputs.run_tc }}
+      run_2004: ${{ steps.schedule-builders.outputs.run_2004 }}
+      run_2204: ${{ steps.schedule-builders.outputs.run_2204 }}
+      run_contrib: ${{ steps.schedule-builders.outputs.run_contrib }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v42
+
+      - name: (Debug) Print changed files
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          for file in $ALL_CHANGED_FILES; do
+            echo $file
+          done
+
+      - name: Determine what to dispatch
+        id: schedule-builders
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          necessary_jobs=$(./.github/scripts/check-patterns.sh "$ALL_CHANGED_FILES")  
+          read -r run_tc run_2004 run_2204 run_contrib <<< "$necessary_jobs"
+          echo "run_tc=${run_tc}" >> $GITHUB_OUTPUT
+          echo "run_2004=${run_2004}" >> $GITHUB_OUTPUT
+          echo "run_2204=${run_2204}" >> $GITHUB_OUTPUT
+          echo "run_contrib=${run_contrib}" >> $GITHUB_OUTPUT
+
+  build-tool-config:
+    name: "Build tool config"
+    needs: determine-actions
+    if: ${{ needs.determine-actions.outputs.run_tc == '1' }}
+    uses: ./.github/workflows/tool-config.yml
+
+  build-2004:
+    name: "Build 20.04 builder"
+    needs: determine-actions
+    if: ${{ needs.determine-actions.outputs.run_2004 == '1' }}
+    uses: ./.github/workflows/builder-ubuntu.yml
+    with:
+      ubuntu_version: "2004"
+
+  build-2204:
+    name: "Build 22.04 builder"
+    needs: determine-actions
+    if: ${{ needs.determine-actions.outputs.run_2204 == '1' }}
+    uses: ./.github/workflows/builder-ubuntu.yml
+    with:
+      ubuntu_version: "2204"
+
+  build-contributor:
+    name: "Build contributor"
+    needs: [determine-actions, build-tool-config, build-2204]
+    if: ${{ needs.determine-actions.outputs.run_contrib == '1' }}
+    uses: ./.github/workflows/contributor.yml
+    with:
+      new_tools: ${{ needs.build-tool-config.result == 'success'}} 
+      new_base: ${{ needs.build-2204.result == 'success'}} 

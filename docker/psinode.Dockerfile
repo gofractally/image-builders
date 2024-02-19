@@ -1,3 +1,6 @@
+ARG TOOL_CONFIG_IMAGE
+FROM ${TOOL_CONFIG_IMAGE} AS toolconfig
+
 FROM ubuntu:22.04
 
 ARG TARGETARCH
@@ -82,7 +85,7 @@ RUN wget https://github.com/gofractally/psibase/releases/download/${RELEASE_TAG}
 RUN softhsm2-util --init-token --slot 0 --label "psibase SoftHSM" --pin ${SOFTHSM_PIN} --so-pin ${SOFTHSM_PIN}
 
 # Copy in tool config
-COPY --from=ghcr.io/gofractally/http-tool-config / /
+COPY --from=toolconfig / /
 
 # Expose ports
 # Psinode port
@@ -100,11 +103,11 @@ ENV PATH=$PSIDK_HOME/bin:$PATH
 COPY docker/conf/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/conf/psinode/psinode-entrypoint.sh /usr/local/bin/
 
-LABEL org.opencontainers.image.title="psinode" \
-    org.opencontainers.image.description="Containers using this image will run psinode with working admin-sys dashboards." \
-    org.opencontainers.image.vendor="Psinq" \
-    org.opencontainers.image.url="https://github.com/gofractally/image-builders/pkgs/container/psinode" \
-    org.opencontainers.image.documentation="https://github.com/gofractally/image-builders"
+LABEL org.opencontainers.image.title="psinode"
+LABEL org.opencontainers.image.description="Containers using this image will run psinode with working admin-sys dashboards."
+LABEL org.opencontainers.image.vendor="Fractally"
+LABEL org.opencontainers.image.url="https://github.com/gofractally/image-builders/pkgs/container/psinode"
+LABEL org.opencontainers.image.documentation="https://github.com/gofractally/image-builders"
 
 WORKDIR $PSINODE_PATH
 ENTRYPOINT ["psinode-entrypoint.sh"]

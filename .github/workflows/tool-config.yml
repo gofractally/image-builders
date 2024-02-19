@@ -4,101 +4,103 @@ env:
   GITHUB_OUTPUT: ""
 
 on:
-  push:
-    branches:
-      - main
-      - "release/*"
-    paths:
-      - "docker/tool-config.Dockerfile"
-      - ".github/workflows/tool-config.yml"
-  pull_request:
-    types: [assigned, opened, synchronize, reopened, labeled]
-    paths:
-      - "docker/tool-config.Dockerfile"
-      - ".github/workflows/tool-config.yml"
+  workflow_call:
 
 jobs:
-  https-tool-config:
-    name: https-tool-config
+  tool-config:
+    name: tool-config
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        protocol: ["http", "https"]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           submodules: false
           fetch-depth: 0
+
       - name: Preparation
         id: prep
         run: |
+          OWNER="${{ github.repository_owner }}"
+          IMAGE="${{ matrix.protocol }}-tool-config"
           REGISTRY="ghcr.io"
-          IMAGE="${REGISTRY}/${{ github.repository_owner }}/https-tool-config"
-          TAGS="${IMAGE}:${{ github.sha }},${IMAGE}:latest"
+          TAG="${{ github.sha }}"
+          TAGS="${REGISTRY}/${OWNER}/${IMAGE}:${TAG}"
           echo "tags=${TAGS,,}" >> $GITHUB_OUTPUT
-      - name: Showtag
-        id: showtag
-        run: echo ${{ steps.prep.outputs.tags }}
+
+      - name: Building ${{ steps.prep.outputs.tags }}
+        run: true
+
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: 'arm64'
-      - name: Docker Buildx setup
-        uses: docker/setup-buildx-action@v2
+
+      - name: Config docker buildx network
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
+
       - name: Login in to registry
-        uses: docker/login-action@v2
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build & Publish Image
+        if: ${{ github.event_name != 'pull_request' }}
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
           file: docker/tool-config.Dockerfile
           build-args: |
-            protocol=https
+            protocol=${{ matrix.protocol }}
           tags: ${{ steps.prep.outputs.tags }}
           platforms: linux/amd64,linux/arm64
-          outputs: type=image,annotation-index.org.opencontainers.image.description=Config files for admin-sys dashboard tools connecting to psinode over https on 8080
-  http-tool-config:
-    name: http-tool-config
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          submodules: false
-          fetch-depth: 0
-      - name: Preparation
-        id: prep
-        run: |
-          REGISTRY="ghcr.io"
-          IMAGE="${REGISTRY}/${{ github.repository_owner }}/http-tool-config"
-          TAGS="${IMAGE}:${{ github.sha }},${IMAGE}:latest"
-          echo "tags=${TAGS,,}" >> $GITHUB_OUTPUT
-      - name: Showtag
-        id: showtag
-        run: echo ${{ steps.prep.outputs.tags }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: 'arm64'
-      - name: Docker Buildx setup
-        uses: docker/setup-buildx-action@v2
-      - name: Login in to registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build & Publish Image
+          outputs: type=image,annotation-index.org.opencontainers.image.description=Config files for admin-sys dashboard tools connecting to psinode over ${{ matrix.protocol }} on 8080
+
+      - name: (PR Only) - Build image archive
+        if: ${{ github.event_name == 'pull_request' }}
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
           file: docker/tool-config.Dockerfile
           build-args: |
-            protocol=http
+            protocol=${{ matrix.protocol }}
           tags: ${{ steps.prep.outputs.tags }}
-          platforms: linux/amd64,linux/arm64
-          outputs: type=image,annotation-index.org.opencontainers.image.description=Config files for admin-sys dashboard tools connecting to psinode over http on 8080
+          platforms: linux/amd64
+          outputs: type=docker,dest=${{ matrix.protocol }}-tool-config-image.tar
+
+      - name: (PR Only) - Build separate arm image archive
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/tool-config.Dockerfile
+          build-args: |
+            protocol=${{ matrix.protocol }}
+          tags: ${{ steps.prep.outputs.tags }}
+          platforms: linux/arm64
+          outputs: type=docker,dest=${{ matrix.protocol }}-tool-config-arm-image.tar
+
+      - name: (PR only) - Upload image archive as artifact
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.protocol }}-tool-config-image
+          path: ${{ matrix.protocol }}-tool-config-image.tar
+          retention-days: 1
+
+      - name: (PR only) - Upload arm image archive as artifact
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.protocol }}-tool-config-arm-image
+          path: ${{ matrix.protocol }}-tool-config-arm-image.tar
+          retention-days: 1
