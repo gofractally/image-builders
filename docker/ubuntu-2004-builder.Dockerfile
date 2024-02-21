@@ -121,7 +121,9 @@ RUN cd /root \
     && curl --proto '=https' --tlsv1.2 -sSf -o rustup.sh https://sh.rustup.rs \
     && chmod 700 rustup.sh \
     && ./rustup.sh -y --no-modify-path \
-    && /opt/cargo/bin/rustup target add wasm32-wasi \
+    && /opt/cargo/bin/rustup target add \
+        wasm32-unknown-unknown  \
+        wasm32-wasi             \
     && /opt/cargo/bin/cargo install \
         cargo-component     \
         mdbook              \
