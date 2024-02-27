@@ -61,10 +61,10 @@ jobs:
         run: |
           necessary_jobs=$(./.github/scripts/check-patterns.sh "$ALL_CHANGED_FILES")  
           read -r run_tc run_2004 run_2204 run_contrib <<< "$necessary_jobs"
-          echo "run_tc=${run_tc}" >> $GITHUB_OUTPUT
-          echo "run_2004=${run_2004}" >> $GITHUB_OUTPUT
-          echo "run_2204=${run_2204}" >> $GITHUB_OUTPUT
-          echo "run_contrib=${run_contrib}" >> $GITHUB_OUTPUT
+          echo "run_tc=${run_tc}" | tee -a $GITHUB_OUTPUT
+          echo "run_2004=${run_2004}" | tee -a $GITHUB_OUTPUT
+          echo "run_2204=${run_2204}" | tee -a $GITHUB_OUTPUT
+          echo "run_contrib=${run_contrib}" | tee -a $GITHUB_OUTPUT
 
   build-tool-config:
     name: "Build tool config"
