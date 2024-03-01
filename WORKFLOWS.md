@@ -21,13 +21,7 @@ This workflow builds images for the `psinode` and `psibase` CLI tools.
 
 This workflow is the dispatcher for all other workflows except for `cli.yml`. It contains the logic for determining what other workflows to run, and how to parameterize them.
 
-Depending on what files are changed, it may be necessary to run any of the following six workflow strategies:
-  * 0: Build nothing
-  * 1: run tool config (and all dependent workflows)
-  * 2: run 2004 builder only
-  * 3: run 2204 builder (and all dependent workflows)
-  * 4: run both 2004 and 2204 builders (and all dependent workflows)
-  * 5: run contributor only
+An image must be rebuilt if either its dependent files have changed, or if it depends on an image whose dependent files have changed. The images must always be built in an order that respects their dependencies. This workflow maintains this logic.
 
 ### Input variables
 
@@ -45,7 +39,7 @@ This workflow is also the only truly cross-platform image, currently, which work
 
 ### Input variables
 
-* `is_pr` - When `false` then the generated image is uploaded to `ghcr.io`. When `true` (when triggered by a pull request) then the generated image is uploaded as a local artifact to the github action with a retention time of 1 day.
+None
 
 ### How to run
 
@@ -56,8 +50,6 @@ This workflow is also the only truly cross-platform image, currently, which work
 This reusable workflow generates the builder images, which are environments capable of building psibase from source. 
 
 ### Input variables
-
-* `is_pr` - When `false` then the generated image is uploaded to `ghcr.io`. When `true` (when triggered by a pull request) then the generated image is uploaded as a local artifact to the github action with a retention time of 1 day.
 
 * `ubuntu_version` - When set to either `"2004"` or `"2204"`, then the generated image will be based on the corresponding version of Ubuntu.
 
@@ -71,11 +63,9 @@ This reusable workflow generates the `psibase-contributor` image, which is used 
 
 ### Input variables
 
-* `is_pr` - When `false` then the generated image is uploaded to `ghcr.io`. When `true` (when triggered by a pull request) then the generated image is uploaded as a local artifact to the github action with a retention time of 1 day.
+* `new_tools` - When true, it means that a new tools image is available as of this job. Therefore, when the contributor build runs, it will use this new image by downloading it either from the job artifact (in the case of a pull request) or from a published GitHub container registry artifact (in the case of a merge).
 
-* `is_local_tools` - When `false`, then the workflow will fetch the latest tools image from the `ghcr.io/gofractally` registry. When `true` then this workflow will assume that a new tools image was generated as part of this change, and therefore will attempt to download the artifact from the github action.
-
-* `is_local_tools` - When `false`, then the workflow will fetch the latest builder image from the `ghcr.io/gofractally` registry. When `true` then this workflow will assume that a new builder image was generated as part of this change, and therefore will attempt to download the artifact from the github action.
+* `new_base` - When true, it means that a new builder image is available as part of this job. Therefore, when the contributor build runs, it will use this image by downloading it either from the job artifact (in the case of a pull request) or from a published GitHub container registry artifact (in the case of a merge).
 
 ### How to run
 
