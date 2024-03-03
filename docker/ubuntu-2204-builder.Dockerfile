@@ -83,13 +83,13 @@ RUN cd /root \
         wasm32-unknown-unknown  \
         wasm32-wasi             \
     && /opt/cargo/bin/cargo install \
-        cargo-component     \
-        mdbook              \
-        mdbook-linkcheck    \
-        mdbook-mermaid      \
-        mdbook-pagetoc      \
-        sccache             \
-        wasm-pack           \
+        cargo-component@0.9.0   \
+        mdbook                  \
+        mdbook-linkcheck        \
+        mdbook-mermaid          \
+        mdbook-pagetoc          \
+        sccache                 \
+        wasm-pack               \
     && chmod -R 777 $RUSTUP_HOME \
     && chmod -R 777 $CARGO_HOME \
     && rm rustup.sh
