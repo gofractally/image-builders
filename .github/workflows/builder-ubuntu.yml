@@ -1,5 +1,5 @@
-name: Generate ubuntu builder images
 # Generates an image that encapsulate an environment on which it is possible to build psibase.
+name: Generate ubuntu builder images
 
 env:
   GITHUB_OUTPUT: ""
