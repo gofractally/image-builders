@@ -14,12 +14,12 @@ jobs:
         protocol: ["http", "https"]
         runner: [ubuntu-latest, arm-runner-1]
         include:
-        - platform: "linux/amd64"
-          platform_short: "amd"
-          runner: ubuntu-latest
-        - platform: "linux/arm64"
-          platform_short: "arm"
-          runner: arm-runner-1
+        - runner: ubuntu-latest
+          platform: "linux/amd64"
+          platform_short: "amd64"
+        - runner: arm-runner-1
+          platform: "linux/arm64"
+          platform_short: "arm64"
     runs-on: ${{ matrix.runner }}
 
     steps:
@@ -29,21 +29,17 @@ jobs:
           submodules: false
           fetch-depth: 0
 
+      # Todo: delete the `-temp` from the name of the image, I did that to prevent polluting the official image for now.
       - name: Preparation
         id: prep
         run: |
-          OWNER="${{ github.repository_owner }}"
-          IMAGE="${{ matrix.protocol }}-tool-config-${{ matrix.platform_short }}"
-          REGISTRY="ghcr.io"
-          TAG="${{ github.sha }}" 
-          FQIMAGE="${REGISTRY}/${OWNER}/${IMAGE}:${TAG}"
+          IMAGE="${{ matrix.protocol }}-tool-config-temp"
+          TAG="${{ github.sha }}-${{ matrix.platform_short }}"
+          FQIMAGE="ghcr.io/${{ github.repository_owner }}/${IMAGE}:${TAG}"
           echo "image=${IMAGE,,}" >> $GITHUB_OUTPUT
           echo "fqImage=${FQIMAGE,,}" >> $GITHUB_OUTPUT
 
-      - name: Building ${{ steps.prep.outputs.fqImage }}
-        run: true
-
-      - name: Runner ${{ matrix.runner }}
+      - name: ${{ matrix.platform_short }} build - ${{ steps.prep.outputs.fqImage }}
         run: true
 
       - name: Install docker
@@ -72,8 +68,6 @@ jobs:
 
       - name: Config docker buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          buildkitd-flags: --debug
 
       - name: Login in to registry
         # if: ${{ github.event_name != 'pull_request' }}
@@ -136,27 +130,10 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Preparation
-        id: prep
+      - name: Create and push manifest
         run: |
-          REGISTRY="ghcr.io"
-          OWNER="${{ github.repository_owner }}"
-          IMAGE="${{ matrix.protocol }}-tool-config"
-          TAG="${{ github.sha }}"
-          FQIMAGE="${REGISTRY}/${OWNER}/${IMAGE}:${TAG}"
-          echo "fqImage=${FQIMAGE,,}" >> $GITHUB_OUTPUT
-
-          ARM_IMAGE="${{ matrix.protocol }}-tool-config-arm"
-          FQIMAGE_ARM="${REGISTRY}/${OWNER}/${ARM_IMAGE}:${TAG}"
-          echo "fqArmImage=${FQIMAGE_ARM,,}" >> $GITHUB_OUTPUT
-
-          AMD_IMAGE="${{ matrix.protocol }}-tool-config-amd"
-          FQIMAGE_AMD="${REGISTRY}/${OWNER}/${AMD_IMAGE}:${TAG}"
-          echo "fqAmdImage=${FQIMAGE_AMD,,}" >> $GITHUB_OUTPUT
-
-      - name: Push manifest
-        uses: Noelware/docker-manifest-action@master
-        with:
-          inputs: ${{ steps.prep.outputs.fqImage }}
-          images: ${{ steps.prep.outputs.fqArmImage }},${{ steps.prep.outputs.fqAmdImage }}
-          push: true
+          IMAGE="ghcr.io/${{ github.repository_owner }}/${{ matrix.protocol }}-tool-config-temp:${{ github.sha }}"
+          docker manifest create ${IMAGE} \
+            --amend ${IMAGE}-arm64 \
+            --amend ${IMAGE}-amd64
+          docker manifest push ${IMAGE}
