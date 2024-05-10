@@ -102,14 +102,14 @@ jobs:
             protocol=${{ matrix.protocol }}
           tags: ${{ steps.prep.outputs.fqImage }}
           platforms: ${{ matrix.platform }}
-          outputs: type=docker,dest=${{ steps.prep.outputs.image }}-image.tar
+          outputs: type=docker,dest=${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image.tar
 
       - name: (PR only) - Upload image archive as artifact
         if: ${{ github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.prep.outputs.image }}-image
-          path: ${{ steps.prep.outputs.image }}-image.tar
+          name: ${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image
+          path: ${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image.tar
           retention-days: 1
   merge: 
     name: merge multi-platform images
