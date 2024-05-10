@@ -29,11 +29,10 @@ jobs:
           submodules: false
           fetch-depth: 0
 
-      # Todo: delete the `-temp` from the name of the image, I did that to prevent polluting the official image for now.
       - name: Preparation
         id: prep
         run: |
-          IMAGE="${{ matrix.protocol }}-tool-config-temp"
+          IMAGE="${{ matrix.protocol }}-tool-config"
           TAG="${{ github.sha }}-${{ matrix.platform_short }}"
           FQIMAGE="ghcr.io/${{ github.repository_owner }}/${IMAGE}:${TAG}"
           echo "image=${IMAGE,,}" >> $GITHUB_OUTPUT
@@ -42,6 +41,7 @@ jobs:
       - name: ${{ matrix.platform_short }} build - ${{ steps.prep.outputs.fqImage }}
         run: true
 
+      # Docker install step can be removed after arm runners are out of beta
       - name: Install docker
         if: matrix.runner == 'arm-runner-1'
         run: |
@@ -70,7 +70,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Login in to registry
-        # if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' }}
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -78,7 +78,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Publish Image
-        # if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' }}
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -114,7 +114,7 @@ jobs:
           retention-days: 1
   merge: 
     name: merge multi-platform images
-    # if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' }}
     strategy:
       matrix:
         protocol: ["http", "https"]
@@ -133,7 +133,7 @@ jobs:
 
       - name: Create and push manifest
         run: |
-          IMAGE="ghcr.io/${{ github.repository_owner }}/${{ matrix.protocol }}-tool-config-temp:${{ github.sha }}"
+          IMAGE="ghcr.io/${{ github.repository_owner }}/${{ matrix.protocol }}-tool-config:${{ github.sha }}"
           docker manifest create ${IMAGE} \
             --amend ${IMAGE}-arm64 \
             --amend ${IMAGE}-amd64
