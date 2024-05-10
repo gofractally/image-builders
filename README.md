@@ -12,6 +12,10 @@ An image based on Ubuntu 22.04 that contains an environment suitable for buildin
 
 Used by the `psibase-contributor` image.
 
+## ubuntu-2404-builder
+
+An image based on Ubuntu 24.04 that contains an environment suitable for building Psibase from source.
+
 ## tool-config
 
 A [scratch](https://hub.docker.com/_/scratch)-based image that contains configuration files for various third-party tooling required by psibase contributor and other downstream images to allow them to display the admin-sys monitoring dashboards (e.g. Prometheus, Grafana, etc.).
