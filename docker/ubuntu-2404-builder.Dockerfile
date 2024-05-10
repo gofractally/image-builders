@@ -26,6 +26,14 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         lld-16                  \
         llvm-16                 \
         libboost1.83-dev        \
+        libboost-chrono1.83-dev          \
+        libboost-date-time1.83-dev       \
+        libboost-filesystem1.83-dev      \
+        libboost-iostreams1.83-dev       \
+        libboost-log1.83-dev             \
+        libboost-program-options1.83-dev \
+        libboost-system1.83-dev          \
+        libboost-test1.83-dev            \
     && apt-get clean -yq        \
     && rm -rf /var/lib/apt/lists/*
 
