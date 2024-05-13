@@ -102,7 +102,7 @@ jobs:
           context: .
           file: docker/ubuntu-${{ inputs.ubuntu_version }}-builder.Dockerfile
           tags: "ghcr.io/${{ github.repository_owner }}/${{ steps.prep.outputs.image }}:${{ github.sha }}-${{ matrix.platform_short }}"
-          platforms: linux/amd64
+          platforms: ${{ matrix.platform }}
           outputs: |
             type=docker
             dest=${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image.tar
