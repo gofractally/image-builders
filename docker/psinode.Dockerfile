@@ -108,6 +108,7 @@ LABEL org.opencontainers.image.description="Containers using this image will run
 LABEL org.opencontainers.image.vendor="Fractally"
 LABEL org.opencontainers.image.url="https://github.com/gofractally/image-builders/pkgs/container/psinode"
 LABEL org.opencontainers.image.documentation="https://github.com/gofractally/image-builders"
+LABEL org.opencontainers.image.source="https://github.com/gofractally/image-builders"
 
 WORKDIR $PSINODE_PATH
 ENTRYPOINT ["psinode-entrypoint.sh"]
