@@ -153,9 +153,7 @@ jobs:
           tags: "ghcr.io/${{ github.repository_owner }}/psibase-contributor:${{ github.sha }}-${{ matrix.platform_short }}"
           platforms: ${{ matrix.platform }}
           provenance: false
-          outputs: |
-            type=image
-            annotation-index.org.opencontainers.image.description=Psibase development environment
+          outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase development environment
 
       - name: (PR Only) - Build image archive
         if: ${{ github.event_name == 'pull_request' }}
@@ -168,9 +166,7 @@ jobs:
           file: docker/psibase-contributor.Dockerfile
           tags: "ghcr.io/${{ github.repository_owner }}/psibase-contributor:${{ github.sha }}-${{ matrix.platform_short }}"
           platforms: ${{ matrix.platform }}
-          outputs: |
-            type=docker
-            dest=psibase_contributor-${{ matrix.platform_short }}.tar
+          outputs: type=docker,dest=psibase_contributor-${{ matrix.platform_short }}.tar
 
       - name: (PR only) - Upload image archive as artifact
         if: ${{ github.event_name == 'pull_request' }}

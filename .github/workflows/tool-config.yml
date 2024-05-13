@@ -86,9 +86,7 @@ jobs:
           tags: "ghcr.io/${{ github.repository_owner }}/${{ steps.prep.outputs.image }}:${{ github.sha }}-${{ matrix.platform_short }}"
           platforms: ${{ matrix.platform }}
           provenance: false
-          outputs: |
-            type=image
-            annotation-index.org.opencontainers.image.description=Config files for admin dashboard tools connecting to psinode over ${{ matrix.protocol }}
+          outputs: type=image,annotation-index.org.opencontainers.image.description=Config files for admin dashboard tools connecting to psinode over ${{ matrix.protocol }}
 
       - name: (PR Only) - Build image archive
         if: ${{ github.event_name == 'pull_request' }}
@@ -100,9 +98,7 @@ jobs:
             protocol=${{ matrix.protocol }}
           tags: "ghcr.io/${{ github.repository_owner }}/${{ steps.prep.outputs.image }}:${{ github.sha }}-${{ matrix.platform_short }}"
           platforms: ${{ matrix.platform }}
-          outputs: |
-            type=docker
-            dest=${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image.tar
+          outputs: type=docker,dest=${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image.tar
 
       - name: (PR only) - Upload image archive as artifact
         if: ${{ github.event_name == 'pull_request' }}
