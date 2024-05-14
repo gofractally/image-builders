@@ -14,5 +14,6 @@ LABEL org.opencontainers.image.description="This docker image provides access to
 LABEL org.opencontainers.image.vendor="Fractally"
 LABEL org.opencontainers.image.url="https://github.com/gofractally/psibase-docker-image/pkgs/container/psibase"
 LABEL org.opencontainers.image.documentation="https://github.com/gofractally/image-builders"
+LABEL org.opencontainers.image.source="https://github.com/gofractally/image-builders"
 
 ENTRYPOINT ["psibase"]

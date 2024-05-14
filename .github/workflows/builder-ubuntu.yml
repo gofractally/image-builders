@@ -16,7 +16,18 @@ on:
 jobs:
   ubuntu-builder:
     name: psibase-builder-ubuntu-${{ inputs.ubuntu_version }}
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runner: [ubuntu-latest, arm-runner-1]
+        include:
+          - runner: ubuntu-latest
+            platform: "linux/amd64"
+            platform_short: "amd64"
+          - runner: arm-runner-1
+            platform: "linux/arm64"
+            platform_short: "arm64"
+    runs-on: ${{ matrix.runner }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,21 +38,39 @@ jobs:
       - name: Preparation
         id: prep
         run: |
-          OWNER="${{ github.repository_owner }}"
           IMAGE="psibase-builder-ubuntu-${{ inputs.ubuntu_version }}"
-          REGISTRY="ghcr.io"
-          TAG="${{ github.sha }}"
+          echo "image=${IMAGE,,}" >> $GITHUB_OUTPUT
 
-          TAGS="${REGISTRY}/${OWNER}/${IMAGE}:${TAG}"
-          echo "tags=${TAGS,,}" >> $GITHUB_OUTPUT
-
-      - name: Building ${{ steps.prep.outputs.tags }}
+      - name: Building ${{ matrix.platform_short }}
         run: true
+
+      # Docker install step can be removed after arm runners are out of beta
+      - name: Install docker
+        if: matrix.runner == 'arm-runner-1'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -yq ca-certificates curl
+          sudo install -m 0755 -d /etc/apt/keyrings
+          sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          sudo chmod a+r /etc/apt/keyrings/docker.asc
+          
+          # Add the repository to Apt sources:
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+
+          # Install
+          sudo apt-get install -yq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+          # Give current user permission to run docker without sudo
+          sudo usermod -aG docker $USER
+          sudo apt-get install -yq acl
+          sudo setfacl --modify user:$USER:rw /var/run/docker.sock
 
       - name: Config docker buildx network
         uses: docker/setup-buildx-action@v3
-        with:
-          buildkitd-flags: --debug
 
       - name: Login in to registry
         if: ${{ github.event_name != 'pull_request' }}
@@ -58,24 +87,56 @@ jobs:
           context: .
           push: true
           file: docker/ubuntu-${{ inputs.ubuntu_version }}-builder.Dockerfile
-          tags: ${{ steps.prep.outputs.tags }}
-          platforms: linux/amd64
-          outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase build environment based on Ubuntu ${{ inputs.ubuntu_version }}
+          tags: "ghcr.io/${{ github.repository_owner }}/${{ steps.prep.outputs.image }}:${{ github.sha }}-${{ matrix.platform_short }}"
+          platforms: ${{ matrix.platform }}
+          provenance: false
+          outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase build environment with Ubuntu ${{ inputs.ubuntu_version }} on ${{ matrix.platform }}
     
       - name: (PR Only) - Build image archive
+        id: archive
         if: ${{ github.event_name == 'pull_request' }}
         uses: docker/build-push-action@v5
         with:
           context: .
           file: docker/ubuntu-${{ inputs.ubuntu_version }}-builder.Dockerfile
-          tags: ${{ steps.prep.outputs.tags }}
-          platforms: linux/amd64
-          outputs: type=docker,dest=builder-${{ inputs.ubuntu_version }}-image.tar
+          tags: "ghcr.io/${{ github.repository_owner }}/${{ steps.prep.outputs.image }}:${{ github.sha }}-${{ matrix.platform_short }}"
+          platforms: ${{ matrix.platform }}
+          outputs: type=docker,dest=${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image.tar
 
       - name: (PR only) - Upload image archive as artifact
         if: ${{ github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@v4
         with:
-          name: builder-${{ inputs.ubuntu_version }}-image
-          path: builder-${{ inputs.ubuntu_version }}-image.tar
+          name: ${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image
+          path: ${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image.tar
           retention-days: 1
+
+  merge: 
+    name: merge multi-platform images
+    if: ${{ github.event_name != 'pull_request' }}
+    runs-on: ubuntu-latest
+    needs: ubuntu-builder
+    steps:
+      - name: Config docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Preparation
+        id: prep
+        run: |
+          IMAGE="psibase-builder-ubuntu-${{ inputs.ubuntu_version }}"
+          echo "image=${IMAGE,,}" >> $GITHUB_OUTPUT
+
+      - name: Login in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push manifest
+        run: |
+          IMAGE="ghcr.io/${{ github.repository_owner }}/${{ steps.prep.outputs.image }}:${{ github.sha }}"
+          docker manifest create ${IMAGE} \
+            --amend ${IMAGE}-arm64 \
+            --amend ${IMAGE}-amd64
+          docker manifest push ${IMAGE}

@@ -1,6 +1,6 @@
 # Docker images
 
-This repo has the GitHub Actions necessary to build various docker images.
+This repo has the GitHub Actions necessary to build various docker images. Both linux/arm64 and linux/amd64 runners are used to produce images compatible with both architectures.
 
 ## ubuntu-2004-builder
 

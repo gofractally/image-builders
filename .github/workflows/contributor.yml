@@ -20,7 +20,13 @@ on:
 jobs:
   psibase-contributor:
     name: psibase-contributor
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            platform: "linux/amd64"
+            platform_short: "amd64"
+    runs-on: ${{ matrix.runner }}
     services:
       registry:
         image: registry:2
@@ -33,27 +39,42 @@ jobs:
           submodules: false
           fetch-depth: 0
 
-      - name: Preparation
-        id: prep
+      - name: Building ${{ matrix.platform_short }}
+        run: true
+
+      # Docker install step can be removed after arm runners are out of beta
+      - name: Install docker
+        if: matrix.runner == 'arm-runner-1'
         run: |
-          OWNER="${{ github.repository_owner }}"
-          IMAGE="psibase-contributor"
-          REGISTRY="ghcr.io"
-          TAG="${{ github.sha }}"
-          TAGS="${REGISTRY}/${OWNER}/${IMAGE}:${TAG}"
-          echo "tags=${TAGS,,}" >> $GITHUB_OUTPUT
+          sudo apt-get update
+          sudo apt-get install -yq ca-certificates curl
+          sudo install -m 0755 -d /etc/apt/keyrings
+          sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          sudo chmod a+r /etc/apt/keyrings/docker.asc
+          
+          # Add the repository to Apt sources:
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+
+          # Install
+          sudo apt-get install -yq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+          # Give current user permission to run docker without sudo
+          sudo usermod -aG docker $USER
+          sudo apt-get install -yq acl
+          sudo setfacl --modify user:$USER:rw /var/run/docker.sock
 
       - name: Config docker buildx
         if: ${{ github.event_name != 'pull_request' }}
         uses: docker/setup-buildx-action@v3
-        with:
-          buildkitd-flags: --debug
 
       - name: (PR only) - Config docker buildx host network
         if: ${{ github.event_name == 'pull_request' }}
         uses: docker/setup-buildx-action@v3
         with:
-          buildkitd-flags: --debug
           driver-opts: network=host
 
       - name: Login in to registry
@@ -67,7 +88,7 @@ jobs:
         if: ${{ inputs.new_base && github.event_name == 'pull_request' }}
         uses: actions/download-artifact@v4
         with:
-          name: builder-2204-image
+          name: psibase-builder-ubuntu-2204-${{ matrix.platform_short }}-image
       - name: Set BASE_IMAGE
         id: base_img
         env:
@@ -75,8 +96,8 @@ jobs:
           IS_PR: ${{ github.event_name == 'pull_request' }}
         run: |
           if [[ "$NEW_BASE" == "true" && "$IS_PR" == "true" ]]; then
-            docker load -i builder-2204-image.tar
-            rm builder-2204-image.tar
+            docker load -i psibase-builder-ubuntu-2204-${{ matrix.platform_short }}-image.tar
+            rm psibase-builder-ubuntu-2204-${{ matrix.platform_short }}-image.tar
             IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
             LOCAL_TAG=localhost:5000/local_base_image:latest
             docker tag ${IMAGE} ${LOCAL_TAG}
@@ -93,7 +114,7 @@ jobs:
         if: ${{ inputs.new_tools && github.event_name == 'pull_request' }}
         uses: actions/download-artifact@v4
         with:
-          name: https-tool-config-image
+          name: https-tool-config-${{ matrix.platform_short }}-image
       - name: Set TOOL_CONFIG_IMAGE
         id: tool_cfg_img
         env:
@@ -101,8 +122,8 @@ jobs:
           IS_PR: ${{ github.event_name == 'pull_request' }}
         run: |
           if [[ "$NEW_TOOLS" == "true" && "$IS_PR" == "true" ]]; then
-            docker load -i https-tool-config-image.tar
-            rm https-tool-config-image.tar
+            docker load -i https-tool-config-${{ matrix.platform_short }}-image.tar
+            rm https-tool-config-${{ matrix.platform_short }}-image.tar
             IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
             LOCAL_TAG=localhost:5000/local_tools_image:latest
             docker tag ${IMAGE} ${LOCAL_TAG}
@@ -115,18 +136,19 @@ jobs:
             echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/https-tool-config:${latest_tag}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build & publish ${{ steps.prep.outputs.tags }}
+      - name: Build & publish
         if: ${{ github.event_name != 'pull_request' }}
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
+          file: docker/psibase-contributor.Dockerfile
           build-args: |
             BASE_IMAGE=${{ steps.base_img.outputs.BASE_IMAGE }}
             TOOL_CONFIG_IMAGE=${{ steps.tool_cfg_img.outputs.TOOL_CONFIG_IMAGE }}
-          file: docker/psibase-contributor.Dockerfile
-          tags: ${{ steps.prep.outputs.tags }}
-          platforms: linux/amd64
+          tags: "ghcr.io/${{ github.repository_owner }}/psibase-contributor:${{ github.sha }}-${{ matrix.platform_short }}"
+          platforms: ${{ matrix.platform }}
+          provenance: false
           outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase development environment
 
       - name: (PR Only) - Build image archive
@@ -138,14 +160,142 @@ jobs:
             BASE_IMAGE=${{ steps.base_img.outputs.BASE_IMAGE }}
             TOOL_CONFIG_IMAGE=${{ steps.tool_cfg_img.outputs.TOOL_CONFIG_IMAGE }}
           file: docker/psibase-contributor.Dockerfile
-          tags: ${{ steps.prep.outputs.tags }}
-          platforms: linux/amd64
-          outputs: type=docker,dest=psibase_contributor.tar
+          tags: "ghcr.io/${{ github.repository_owner }}/psibase-contributor:${{ github.sha }}-${{ matrix.platform_short }}"
+          platforms: ${{ matrix.platform }}
+          outputs: type=docker,dest=psibase_contributor-${{ matrix.platform_short }}.tar
 
       - name: (PR only) - Upload image archive as artifact
         if: ${{ github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@v4
         with:
-          name: psibase_contributor
-          path: psibase_contributor.tar
+          name: psibase_contributor-${{ matrix.platform_short }}
+          path: psibase_contributor-${{ matrix.platform_short }}.tar
           retention-days: 1
+  
+  # Arm64 runners don't have docker installed, so can't use the registry service to load
+  #  local images. Therefore, for now we must skip PR builds of psibase-contributor on arm.
+  #  Once arm-runners are out of beta, the runners will have docker installed on them by default,
+  #  and this special job can be deleted, and the arm64 runner can be added as a matrix option
+  #  to the prior job.
+  psibase-contributor-arm64:
+    name: psibase-contributor-arm64
+    strategy:
+      matrix:
+        include:
+          - runner: arm-runner-1
+            platform: "linux/arm64"
+            platform_short: "arm64"
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+          fetch-depth: 0
+
+      - name: Building ${{ matrix.platform_short }}
+        run: true
+
+      # Docker install step can be removed after arm runners are out of beta
+      - name: Install docker
+        if: matrix.runner == 'arm-runner-1'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -yq ca-certificates curl
+          sudo install -m 0755 -d /etc/apt/keyrings
+          sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          sudo chmod a+r /etc/apt/keyrings/docker.asc
+          
+          # Add the repository to Apt sources:
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+
+          # Install
+          sudo apt-get install -yq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+          # Give current user permission to run docker without sudo
+          sudo usermod -aG docker $USER
+          sudo apt-get install -yq acl
+          sudo setfacl --modify user:$USER:rw /var/run/docker.sock
+
+      - name: Config docker buildx
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set BASE_IMAGE
+        id: base_img
+        env:
+          NEW_BASE: ${{ inputs.new_base }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
+        run: |
+          if [[ "$NEW_BASE" == "true" && "$IS_PR" == "true" ]]; then
+            echo "Skipping PR build on arm64"
+          elif [[ "$NEW_BASE" == "true" ]]; then
+            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${{ github.sha }}" >> $GITHUB_OUTPUT
+          else
+            latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/psibase-builder-ubuntu-2204")
+            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${latest_tag}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set TOOL_CONFIG_IMAGE
+        id: tool_cfg_img
+        env:
+          NEW_TOOLS: ${{ inputs.new_tools }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
+        run: |
+          if [[ "$NEW_TOOLS" == "true" && "$IS_PR" == "true" ]]; then
+            echo "Skipping PR build on arm64"
+          elif [[ "$NEW_TOOLS" == "true" ]]; then
+            echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/https-tool-config:${{ github.sha }}" >> $GITHUB_OUTPUT
+          else
+            latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/https-tool-config")
+            echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/https-tool-config:${latest_tag}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build & publish
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          file: docker/psibase-contributor.Dockerfile
+          build-args: |
+            BASE_IMAGE=${{ steps.base_img.outputs.BASE_IMAGE }}
+            TOOL_CONFIG_IMAGE=${{ steps.tool_cfg_img.outputs.TOOL_CONFIG_IMAGE }}
+          tags: "ghcr.io/${{ github.repository_owner }}/psibase-contributor:${{ github.sha }}-${{ matrix.platform_short }}"
+          platforms: ${{ matrix.platform }}
+          provenance: false
+          outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase development environment
+  merge: 
+    name: merge multi-platform images
+    if: ${{ github.event_name != 'pull_request' }}
+    runs-on: ubuntu-latest
+    needs: [psibase-contributor, psibase-contributor-arm64]
+    steps:
+      - name: Config docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push manifest
+        run: |
+          IMAGE="ghcr.io/${{ github.repository_owner }}/psibase-contributor:${{ github.sha }}"
+          docker manifest create ${IMAGE} \
+            --amend ${IMAGE}-arm64 \
+            --amend ${IMAGE}-amd64
+          docker manifest push ${IMAGE}
