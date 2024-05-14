@@ -90,7 +90,7 @@ jobs:
           tags: "ghcr.io/${{ github.repository_owner }}/${{ steps.prep.outputs.image }}:${{ github.sha }}-${{ matrix.platform_short }}"
           platforms: ${{ matrix.platform }}
           provenance: false
-          outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase build environment with Ubuntu ${{ inputs.ubuntu_version }} on ${{ matrix.platform }}
+          outputs: type=image
     
       - name: (PR Only) - Build image archive
         id: archive

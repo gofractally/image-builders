@@ -86,7 +86,7 @@ jobs:
           tags: "ghcr.io/${{ github.repository_owner }}/${{ steps.prep.outputs.image }}:${{ github.sha }}-${{ matrix.platform_short }}"
           platforms: ${{ matrix.platform }}
           provenance: false
-          outputs: type=image,annotation-index.org.opencontainers.image.description=Config files for admin dashboard tools connecting to psinode over ${{ matrix.protocol }}
+          outputs: type=image
 
       - name: (PR Only) - Build image archive
         if: ${{ github.event_name == 'pull_request' }}

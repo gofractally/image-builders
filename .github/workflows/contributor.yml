@@ -149,7 +149,7 @@ jobs:
           tags: "ghcr.io/${{ github.repository_owner }}/psibase-contributor:${{ github.sha }}-${{ matrix.platform_short }}"
           platforms: ${{ matrix.platform }}
           provenance: false
-          outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase development environment
+          outputs: type=image
 
       - name: (PR Only) - Build image archive
         if: ${{ github.event_name == 'pull_request' }}
@@ -275,7 +275,7 @@ jobs:
           tags: "ghcr.io/${{ github.repository_owner }}/psibase-contributor:${{ github.sha }}-${{ matrix.platform_short }}"
           platforms: ${{ matrix.platform }}
           provenance: false
-          outputs: type=image,annotation-index.org.opencontainers.image.description=Psibase development environment
+          outputs: type=image
   merge: 
     name: merge multi-platform images
     if: ${{ github.event_name != 'pull_request' }}

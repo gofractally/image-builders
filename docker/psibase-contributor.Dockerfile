@@ -121,3 +121,10 @@ export HOST_IP=$(ip route | awk "/default/ { print \$3 }") \
 ENV CCACHE_DIR=${PSINODE_PATH}/.caches/ccache
 ENV SCCACHE_DIR=${PSINODE_PATH}/.caches/sccache
 ENV CCACHE_CONFIGPATH=${PSINODE_PATH}/ccache.conf
+
+LABEL org.opencontainers.image.title="psibase-contributor"
+LABEL org.opencontainers.image.description="Psibase development environment"
+LABEL org.opencontainers.image.vendor="Fractally"
+LABEL org.opencontainers.image.url="https://github.com/gofractally/image-builders/pkgs/container/psibase-contributor"
+LABEL org.opencontainers.image.documentation="https://github.com/gofractally/image-builders"
+LABEL org.opencontainers.image.source="https://github.com/gofractally/image-builders"
