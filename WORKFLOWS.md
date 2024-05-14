@@ -35,8 +35,6 @@ None
 
 This reusable workflow generates an image that packages up configuration files for various third-party tools used by other images. These configurations are from tools such as prometheus, grafana, etc., which can be helpful for node operators looking for more statistics about psinode. 
 
-This workflow is also the only truly cross-platform image, currently, which works because we use QEMU emulation to build an arm-compatible image on an amd64-based runner. This strategy only works on this image because the image is very small, whereas other images are much too large for emulation to be feasible.
-
 ### Input variables
 
 None
