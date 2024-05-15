@@ -5,6 +5,7 @@ FROM ghcr.io/gofractally/psinode:$psinode_version as psinode
 
 FROM ubuntu:22.04
 COPY --from=psinode /opt/psidk-ubuntu-2204/bin/psibase /opt/psidk-ubuntu-2204/bin/psibase
+COPY --from=psinode /opt/psidk-ubuntu-2204/share /opt/psidk-ubuntu-2204/share
 
 ENV PSIDK_HOME=/opt/psidk-ubuntu-2204
 ENV PATH=$PSIDK_HOME/bin:$PATH
