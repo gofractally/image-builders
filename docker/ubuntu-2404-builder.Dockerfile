@@ -77,7 +77,7 @@ RUN cd /root \
         wasm32-unknown-unknown  \
         wasm32-wasi             \
     && /opt/cargo/bin/cargo install \
-        cargo-component@0.9.0   \
+        cargo-component@0.13    \
         mdbook                  \
         mdbook-linkcheck        \
         mdbook-mermaid          \
