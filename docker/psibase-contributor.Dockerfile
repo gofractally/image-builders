@@ -96,6 +96,9 @@ RUN $CARGO_HOME/bin/cargo install \
     cargo-edit \
     wasm-tools
 
+RUN npm i -g \
+    eslint
+
 # Expose ports
 ## Psinode
 EXPOSE 8080
