@@ -114,9 +114,11 @@ parse_git_branch() {\n\
   git branch 2> /dev/null | sed -e "/^[^*]/d" -e "s/* \\(.*\\)/ (\\1)/"\n\
 } \n\
 export PS1="\u@\h \W\[\\033[32m\\]\\$(parse_git_branch)\\[\\033[00m\\] $ "\n\
-if [ -f ~/.git-completion.bash ]; then\n\
-  . ~/.git-completion.bash\n\
-fi\n\
+#if [ -f ~/.git-completion.bash ]; then\n\
+  #. ~/.git-completion.bash\n\
+#fi\n\
+# Source the git completion file to enable git-completion
+. /usr/share/bash-completion/completions/git\n\
  \n\
 alias ll="ls -alF"\n\
 alias ls="ls --color=auto"\n\
