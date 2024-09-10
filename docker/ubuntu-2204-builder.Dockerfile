@@ -23,13 +23,13 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         zstd                    \
 #   Clang / LLVM
     && wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc \
-    && add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main" \
+    && add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main" \
     && apt-get update           \
     && apt-get install -yq      \
-        clang-16                \
-        libclang-16-dev         \
-        lld-16                  \
-        llvm-16                 \
+        clang-18                \
+        libclang-18-dev         \
+        lld-18                  \
+        llvm-18                 \
     && apt-get clean -yq        \
     && rm -rf /var/lib/apt/lists/*
 
@@ -43,17 +43,18 @@ RUN cd /root \
     && cd /root \
     && rm -rf boost*
 
-# https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-20
-ENV WASI_SDK_PREFIX=/usr/lib/llvm-16
+# https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-24
+ENV WASI_SDK_PREFIX=/usr/lib/llvm-18
 ENV PATH=${WASI_SDK_PREFIX}/bin:$PATH
-RUN cd ${WASI_SDK_PREFIX}/lib/clang/16/                         \
-    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/libclang_rt.builtins-wasm32-wasi-20.0.tar.gz \
-    && tar xf libclang_rt.builtins-wasm32-wasi-20.0.tar.gz      \
-    && rm libclang_rt.builtins-wasm32-wasi-20.0.tar.gz          \
+RUN cd ${WASI_SDK_PREFIX}/lib/clang/18/                         \
+    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-24/libclang_rt.builtins-wasm32-wasi-24.0.tar.gz \
+    && mkdir -p lib/wasi                                        \
+    && tar xf libclang_rt.builtins-wasm32-wasi-24.0.tar.gz -C lib/wasi --strip-components=1 \
+    && rm libclang_rt.builtins-wasm32-wasi-24.0.tar.gz          \
     && cd ${WASI_SDK_PREFIX}/share                              \
-    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sysroot-20.0.tar.gz \
-    && tar xf wasi-sysroot-20.0.tar.gz                          \
-    && rm wasi-sysroot-20.0.tar.gz
+    && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-24/wasi-sysroot-24.0.tar.gz \
+    && tar xf wasi-sysroot-24.0.tar.gz                          \
+    && rm wasi-sysroot-24.0.tar.gz
 
 RUN <<EOT bash
     set -eux
