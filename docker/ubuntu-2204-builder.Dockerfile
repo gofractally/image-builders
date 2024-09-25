@@ -53,7 +53,7 @@ RUN cd ${WASI_SDK_PREFIX}/lib/clang/18/                         \
     && rm libclang_rt.builtins-wasm32-wasi-24.0.tar.gz          \
     && cd ${WASI_SDK_PREFIX}/share                              \
     && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-24/wasi-sysroot-24.0.tar.gz \
-    && tar xf wasi-sysroot-24.0.tar.gz                          \
+    && tar xf wasi-sysroot-24.0.tar.gz --transform 's/^[^\/]*/wasi-sysroot/' \
     && rm wasi-sysroot-24.0.tar.gz
 
 RUN <<EOT bash
