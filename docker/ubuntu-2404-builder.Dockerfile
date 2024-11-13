@@ -7,33 +7,33 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get install -yq software-properties-common \
     && apt-get update \
     && apt-get install -yq      \
-        autoconf                \
-        binaryen                \
-        build-essential         \
-        ccache                  \
-        cmake                   \
-        curl                    \
-        git                     \
-        libssl-dev              \
-        libtool                 \
-        pkg-config              \
-        python3-requests        \
-        strace                  \
-        wget                    \
-        zstd                    \
-        clang-16                \
-        libclang-16-dev         \
-        lld-16                  \
-        llvm-16                 \
-        libboost1.83-dev        \
-        libboost-chrono1.83-dev          \
-        libboost-date-time1.83-dev       \
-        libboost-filesystem1.83-dev      \
-        libboost-iostreams1.83-dev       \
-        libboost-log1.83-dev             \
-        libboost-program-options1.83-dev \
-        libboost-system1.83-dev          \
-        libboost-test1.83-dev            \
+    autoconf                \
+    binaryen                \
+    build-essential         \
+    ccache                  \
+    cmake                   \
+    curl                    \
+    git                     \
+    libssl-dev              \
+    libtool                 \
+    pkg-config              \
+    python3-requests        \
+    strace                  \
+    wget                    \
+    zstd                    \
+    clang-16                \
+    libclang-16-dev         \
+    lld-16                  \
+    llvm-16                 \
+    libboost1.83-dev        \
+    libboost-chrono1.83-dev          \
+    libboost-date-time1.83-dev       \
+    libboost-filesystem1.83-dev      \
+    libboost-iostreams1.83-dev       \
+    libboost-log1.83-dev             \
+    libboost-program-options1.83-dev \
+    libboost-system1.83-dev          \
+    libboost-test1.83-dev            \
     && apt-get clean -yq        \
     && rm -rf /var/lib/apt/lists/*
 
@@ -73,17 +73,21 @@ RUN cd /root \
     && curl --proto '=https' --tlsv1.2 -sSf -o rustup.sh https://sh.rustup.rs \
     && chmod 700 rustup.sh \
     && ./rustup.sh -y --no-modify-path \
+    \
     && /opt/cargo/bin/rustup target add \
-        wasm32-unknown-unknown  \
-        wasm32-wasi             \
+    wasm32-unknown-unknown  \
+    wasm32-wasi             \
+    wasm32-wasip1           \
+    \
     && /opt/cargo/bin/cargo install \
-        cargo-component@0.13.2  \
-        mdbook                  \
-        mdbook-linkcheck        \
-        mdbook-mermaid          \
-        mdbook-pagetoc          \
-        sccache                 \
-        wasm-pack               \
+    cargo-component@0.13.2  \
+    mdbook                  \
+    mdbook-linkcheck        \
+    mdbook-mermaid          \
+    mdbook-pagetoc          \
+    sccache                 \
+    wasm-pack               \
+    \
     && chmod -R 777 $RUSTUP_HOME \
     && chmod -R 777 $CARGO_HOME \
     && rm rustup.sh
