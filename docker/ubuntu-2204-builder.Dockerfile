@@ -7,29 +7,29 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get install -yq software-properties-common \
     && apt-get update \
     && apt-get install -yq      \
-        autoconf                \
-        binaryen                \
-        build-essential         \
-        ccache                  \
-        cmake                   \
-        curl                    \
-        git                     \
-        libssl-dev              \
-        libtool                 \
-        pkg-config              \
-        python3-requests        \
-        strace                  \
-        wget                    \
-        zstd                    \
-#   Clang / LLVM
+    autoconf                \
+    binaryen                \
+    build-essential         \
+    ccache                  \
+    cmake                   \
+    curl                    \
+    git                     \
+    libssl-dev              \
+    libtool                 \
+    pkg-config              \
+    python3-requests        \
+    strace                  \
+    wget                    \
+    zstd                    \
+    #   Clang / LLVM
     && wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc \
     && add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main" \
     && apt-get update           \
     && apt-get install -yq      \
-        clang-18                \
-        libclang-18-dev         \
-        lld-18                  \
-        llvm-18                 \
+    clang-18                \
+    libclang-18-dev         \
+    lld-18                  \
+    llvm-18                 \
     && apt-get clean -yq        \
     && rm -rf /var/lib/apt/lists/*
 
@@ -39,7 +39,7 @@ RUN cd /root \
     && cd boost_1_81_0 \
     && ./bootstrap.sh \
     && ./b2 --prefix=/usr/local --build-dir=build variant=release --with-chrono --with-date_time \
-            --with-filesystem --with-iostreams --with-log --with-program_options --with-system --with-test install \
+    --with-filesystem --with-iostreams --with-log --with-program_options --with-system --with-test install \
     && cd /root \
     && rm -rf boost*
 
