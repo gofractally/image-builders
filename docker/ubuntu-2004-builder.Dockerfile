@@ -121,18 +121,22 @@ RUN cd /root \
     && curl --proto '=https' --tlsv1.2 -sSf -o rustup.sh https://sh.rustup.rs \
     && chmod 700 rustup.sh \
     && ./rustup.sh -y --no-modify-path \
+    # Compile targets
     && /opt/cargo/bin/rustup target add \
-        wasm32-unknown-unknown  \
-        wasm32-wasi             \
+    wasm32-unknown-unknown  \
+    wasm32-wasi             \
+    wasm32-wasip1           \
+    # Cargo tools
     && /opt/cargo/bin/cargo install \
-        cargo-component@0.13.2 \
-        mdbook                 \
-        mdbook-linkcheck       \
-        mdbook-mermaid         \
-        mdbook-pagetoc         \
-        sccache                \
-        wasm-pack              \
+    cargo-component@0.13.2  \
+    mdbook                  \
+    mdbook-linkcheck        \
+    mdbook-mermaid          \
+    mdbook-pagetoc          \
+    sccache                 \
+    wasm-pack               \
+    # 
     && chmod -R 777 $RUSTUP_HOME \
     && chmod -R 777 $CARGO_HOME \
     && rm rustup.sh
-ENV PATH=${CARGO_HOME}/bin:$PATH
+ENV PATH=$CARGO_HOME/bin:$PATH
