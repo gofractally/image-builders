@@ -7,7 +7,6 @@ ALL_CHANGED_FILES="$1"
 IFS=' ' read -r -a changed <<< $ALL_CHANGED_FILES
 
 TOOL_CONFIG_PATTERNS=("docker/tool-config.Dockerfile .github/workflows/tool-config.yml docker/conf/**")
-BUILDER_2004_PATTERNS=("docker/ubuntu-2004-builder.Dockerfile .github/workflows/builder-ubuntu.yml")
 BUILDER_2204_PATTERNS=("docker/ubuntu-2204-builder.Dockerfile .github/workflows/builder-ubuntu.yml")
 BUILDER_2404_PATTERNS=("docker/ubuntu-2404-builder.Dockerfile .github/workflows/builder-ubuntu.yml")
 CONTRIB_PATTERNS=("docker/psibase-contributor.Dockerfile .github/workflows/contributor.yml")
@@ -27,14 +26,6 @@ run_tc="0"
 for pattern in ${TOOL_CONFIG_PATTERNS[@]}; do
     if matches_pattern $pattern; then
         run_tc="1"
-        break
-    fi
-done
-
-run_2004="0"
-for pattern in ${BUILDER_2004_PATTERNS[@]}; do
-    if matches_pattern $pattern; then
-        run_2004="1"
         break
     fi
 done
@@ -67,4 +58,4 @@ else
     done
 fi
 
-echo "${run_tc} ${run_2004} ${run_2204} ${run_2404} ${run_contrib}"
+echo "${run_tc} ${run_2204} ${run_2404} ${run_contrib}"
