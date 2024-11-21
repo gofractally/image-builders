@@ -2,10 +2,6 @@
 
 This repo has the GitHub Actions necessary to build various docker images. Both linux/arm64 and linux/amd64 runners are used to produce images compatible with both architectures.
 
-## ubuntu-2004-builder
-
-An image based on Ubuntu 20.04 that contains an environment suitable for building Psibase from source.
-
 ## ubuntu-2204-builder
 
 An image based on Ubuntu 22.04 that contains an environment suitable for building Psibase from source.

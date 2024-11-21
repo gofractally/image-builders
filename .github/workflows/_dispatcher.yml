@@ -31,7 +31,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       run_tc: ${{ steps.schedule-builders.outputs.run_tc }}
-      run_2004: ${{ steps.schedule-builders.outputs.run_2004 }}
       run_2204: ${{ steps.schedule-builders.outputs.run_2204 }}
       run_2404: ${{ steps.schedule-builders.outputs.run_2404 }}
       run_contrib: ${{ steps.schedule-builders.outputs.run_contrib }}
@@ -61,9 +60,8 @@ jobs:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
           necessary_jobs=$(./.github/scripts/check-patterns.sh "$ALL_CHANGED_FILES")  
-          read -r run_tc run_2004 run_2204 run_2404 run_contrib <<< "$necessary_jobs"
+          read -r run_tc run_2204 run_2404 run_contrib <<< "$necessary_jobs"
           echo "run_tc=${run_tc}" | tee -a $GITHUB_OUTPUT
-          echo "run_2004=${run_2004}" | tee -a $GITHUB_OUTPUT
           echo "run_2204=${run_2204}" | tee -a $GITHUB_OUTPUT
           echo "run_2404=${run_2404}" | tee -a $GITHUB_OUTPUT
           echo "run_contrib=${run_contrib}" | tee -a $GITHUB_OUTPUT
@@ -73,14 +71,6 @@ jobs:
     needs: determine-actions
     if: ${{ needs.determine-actions.outputs.run_tc == '1' }}
     uses: ./.github/workflows/tool-config.yml
-
-  build-2004:
-    name: "Build 20.04 builder"
-    needs: determine-actions
-    if: ${{ needs.determine-actions.outputs.run_2004 == '1' }}
-    uses: ./.github/workflows/builder-ubuntu.yml
-    with:
-      ubuntu_version: "2004"
 
   build-2204:
     name: "Build 22.04 builder"

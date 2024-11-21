@@ -49,7 +49,7 @@ This reusable workflow generates the builder images, which are environments capa
 
 ### Input variables
 
-* `ubuntu_version` - When set to either `"2004"`, `"2204"`, or `"2404"`, then the generated image will be based on the corresponding version of Ubuntu.
+* `ubuntu_version` - When set to either `"2204"` or `"2404"`, then the generated image will be based on the corresponding version of Ubuntu.
 
 ### How to run
 
