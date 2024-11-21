@@ -1,7 +1,7 @@
 ARG TOOL_CONFIG_IMAGE
 FROM ${TOOL_CONFIG_IMAGE} AS toolconfig
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 ARG TARGETARCH
 ARG RELEASE_TAG
@@ -71,14 +71,14 @@ RUN <<EOT bash
 EOT
 
 # Install Psidk
-RUN wget https://github.com/gofractally/psibase/releases/download/${RELEASE_TAG}/psidk-ubuntu-2204.tar.gz \
-    && tar xf psidk-ubuntu-2204.tar.gz          \
-        psidk-ubuntu-2204/bin/psinode           \
-        psidk-ubuntu-2204/bin/psibase           \
-        psidk-ubuntu-2204/share/psibase/        \
-        psidk-ubuntu-2204/share/man/            \
-    && rm psidk-ubuntu-2204.tar.gz              \
-    && cp psidk-ubuntu-2204/share/man/* /usr/share/man/man1/
+RUN wget https://github.com/gofractally/psibase/releases/download/${RELEASE_TAG}/psidk-ubuntu-2404.tar.gz \
+    && tar xf psidk-ubuntu-2404.tar.gz          \
+        psidk-ubuntu-2404/bin/psinode           \
+        psidk-ubuntu-2404/bin/psibase           \
+        psidk-ubuntu-2404/share/psibase/        \
+        psidk-ubuntu-2404/share/man/            \
+    && rm psidk-ubuntu-2404.tar.gz              \
+    && cp psidk-ubuntu-2404/share/man/* /usr/share/man/man1/
 
 
 # Configure SoftHSM with default pins
@@ -96,7 +96,7 @@ EXPOSE 9090
 EXPOSE 3000
 
 # Set env variables
-ENV PSIDK_HOME=/opt/psidk-ubuntu-2204
+ENV PSIDK_HOME=/opt/psidk-ubuntu-2404
 ENV PSINODE_PATH=/root/psibase
 ENV PATH=$PSIDK_HOME/bin:$PATH
 

@@ -24,13 +24,13 @@ The `https-*` version is meant to be used when you're connecting to psinode itse
 
 ## psibase-contributor
 
-An image based on `ubuntu-2204-builder` that also contains some external tools, environment variables, terminal completion, and other basic necessities used when developing Psibase.
+An image based on `ubuntu-2404-builder` that also contains some external tools, environment variables, terminal completion, and other basic necessities used when developing Psibase.
 
 This image is used by the psibase-contributor repository to simplify setting up a development environment inside a docker container.
 
 ## psinode
 
-This image is used to run [psinode](https://docs.psibase.io/run-infrastructure/cli/psinode.html) from prebuilt psidk binaries in a docker container on Ubuntu 22.04. Psinode run in this way is exposed to the host on port 8080.
+This image is used to run [psinode](https://docs.psibase.io/run-infrastructure/cli/psinode.html) from prebuilt psidk binaries in a docker container on Ubuntu 24.04. Psinode run in this way is exposed to the host on port 8080.
 
 > Note: Teaching the various docker CLI options is outside the scope of this document, please see the [Docker CLI documentation](https://docs.docker.com/engine/reference/commandline/cli/) if you're confused about any of the flags.
 
@@ -56,7 +56,7 @@ The second way is to use the separate `psibase` image on the same network as the
 
 ## psibase
 
-This image is used to run [psibase](https://docs.psibase.io/run-infrastructure/cli/psibase.html) from prebuilt psidk binaries in a docker container on Ubuntu 22.04.
+This image is used to run [psibase](https://docs.psibase.io/run-infrastructure/cli/psibase.html) from prebuilt psidk binaries in a docker container on Ubuntu 24.04.
 
 If you're using this tool to run commands on a `psinode` instance you started in a local docker container, you should run this image on the same custom docker network to allow you to connect to it using its container name. For example, the following is what the boot command would look like if `psinode_network` is the name of the custom docker network created for and used by the psinode container:
 

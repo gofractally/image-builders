@@ -3,11 +3,11 @@
 ARG psinode_version
 FROM ghcr.io/gofractally/psinode:$psinode_version as psinode
 
-FROM ubuntu:22.04
-COPY --from=psinode /opt/psidk-ubuntu-2204/bin/psibase /opt/psidk-ubuntu-2204/bin/psibase
-COPY --from=psinode /opt/psidk-ubuntu-2204/share /opt/psidk-ubuntu-2204/share
+FROM ubuntu:24.04
+COPY --from=psinode /opt/psidk-ubuntu-2404/bin/psibase /opt/psidk-ubuntu-2404/bin/psibase
+COPY --from=psinode /opt/psidk-ubuntu-2404/share /opt/psidk-ubuntu-2404/share
 
-ENV PSIDK_HOME=/opt/psidk-ubuntu-2204
+ENV PSIDK_HOME=/opt/psidk-ubuntu-2404
 ENV PATH=$PSIDK_HOME/bin:$PATH
 
 LABEL org.opencontainers.image.title="psibase"

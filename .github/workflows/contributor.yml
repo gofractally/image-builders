@@ -66,7 +66,7 @@ jobs:
         if: ${{ inputs.new_base && github.event_name == 'pull_request' }}
         uses: actions/download-artifact@v4
         with:
-          name: psibase-builder-ubuntu-2204-${{ matrix.platform_short }}-image
+          name: psibase-builder-ubuntu-2404-${{ matrix.platform_short }}-image
       - name: Set BASE_IMAGE
         id: base_img
         env:
@@ -74,18 +74,18 @@ jobs:
           IS_PR: ${{ github.event_name == 'pull_request' }}
         run: |
           if [[ "$NEW_BASE" == "true" && "$IS_PR" == "true" ]]; then
-            docker load -i psibase-builder-ubuntu-2204-${{ matrix.platform_short }}-image.tar
-            rm psibase-builder-ubuntu-2204-${{ matrix.platform_short }}-image.tar
+            docker load -i psibase-builder-ubuntu-2404-${{ matrix.platform_short }}-image.tar
+            rm psibase-builder-ubuntu-2404-${{ matrix.platform_short }}-image.tar
             IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
             LOCAL_TAG=localhost:5000/local_base_image:latest
             docker tag ${IMAGE} ${LOCAL_TAG}
             docker push ${LOCAL_TAG}
             echo "BASE_IMAGE=${LOCAL_TAG}" >> $GITHUB_OUTPUT
           elif [[ "$NEW_BASE" == "true" ]]; then
-            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${{ github.sha }}" >> $GITHUB_OUTPUT
+            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2404:${{ github.sha }}" >> $GITHUB_OUTPUT
           else
-            latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/psibase-builder-ubuntu-2204")
-            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2204:${latest_tag}" >> $GITHUB_OUTPUT
+            latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/psibase-builder-ubuntu-2404")
+            echo "BASE_IMAGE=ghcr.io/gofractally/psibase-builder-ubuntu-2404:${latest_tag}" >> $GITHUB_OUTPUT
           fi
 
       - name: Download local tools image

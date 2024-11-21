@@ -90,9 +90,9 @@ jobs:
 
   build-contributor:
     name: "Build contributor"
-    needs: [determine-actions, build-tool-config, build-2204]
+    needs: [determine-actions, build-tool-config, build-2404]
     if: ${{ !cancelled() && needs.determine-actions.outputs.run_contrib == '1' }}
     uses: ./.github/workflows/contributor.yml
     with:
       new_tools: ${{ needs.build-tool-config.result == 'success'}} 
-      new_base: ${{ needs.build-2204.result == 'success'}} 
+      new_base: ${{ needs.build-2404.result == 'success'}} 
