@@ -42,9 +42,11 @@ ENV WASI_SDK_PREFIX=/usr/lib/llvm-18
 ENV PATH=${WASI_SDK_PREFIX}/bin:$PATH
 RUN cd ${WASI_SDK_PREFIX}/lib/clang/18/                         \
     && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-24/libclang_rt.builtins-wasm32-wasi-24.0.tar.gz \
-    && mkdir -p lib/wasi                                        \
+    && mkdir -p lib/wasi lib/wasip1 lib/wasip2                  \
     && tar xf libclang_rt.builtins-wasm32-wasi-24.0.tar.gz -C lib/wasi --strip-components=1 \
     && rm libclang_rt.builtins-wasm32-wasi-24.0.tar.gz          \
+    && ln lib/wasi/libclang_rt.builtins-wasm32.a lib/wasip1     \
+    && ln lib/wasi/libclang_rt.builtins-wasm32.a lib/wasip2     \
     && cd ${WASI_SDK_PREFIX}/share                              \
     && curl -LO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-24/wasi-sysroot-24.0.tar.gz \
     && tar xf wasi-sysroot-24.0.tar.gz --transform 's/^[^\/]*/wasi-sysroot/' \
