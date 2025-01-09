@@ -94,7 +94,8 @@ COPY --from=toolconfig / /
 # Install nice-to-have rust/wasm tooling
 RUN $CARGO_HOME/bin/cargo install \
     cargo-edit \
-    wasm-tools
+    wasm-tools \
+    cargo-generate@0.22.0 
 
 RUN npm i -g \
     eslint
