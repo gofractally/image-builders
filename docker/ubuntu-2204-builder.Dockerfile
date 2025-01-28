@@ -34,9 +34,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && rm -rf /var/lib/apt/lists/*
 
 RUN cd /root \
-    && curl -LO https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.bz2 \
-    && tar xf boost_1_81_0.tar.bz2 \
-    && cd boost_1_81_0 \
+    && curl -LO https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2 \
+    && tar xf boost_1_87_0.tar.bz2 \
+    && cd boost_1_87_0 \
     && ./bootstrap.sh \
     && ./b2 --prefix=/usr/local --build-dir=build variant=release --with-chrono --with-date_time \
     --with-filesystem --with-iostreams --with-log --with-program_options --with-system --with-test install \
