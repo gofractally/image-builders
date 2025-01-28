@@ -79,7 +79,6 @@ RUN cd /root \
     # Compile targets
     && /opt/cargo/bin/rustup target add \
     wasm32-unknown-unknown  \
-    wasm32-wasi             \
     wasm32-wasip1           \
     # Cargo tools
     && /opt/cargo/bin/cargo install \
