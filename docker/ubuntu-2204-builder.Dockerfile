@@ -93,6 +93,7 @@ RUN cd /root \
     mdbook-linkcheck        \
     mdbook-mermaid          \
     mdbook-pagetoc          \
+    mdbook-tabs             \
     sccache                 \
     wasm-pack               \
     # 
