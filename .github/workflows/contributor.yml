@@ -92,7 +92,7 @@ jobs:
         if: ${{ inputs.new_tools && github.event_name == 'pull_request' }}
         uses: actions/download-artifact@v4
         with:
-          name: https-tool-config-${{ matrix.platform_short }}-image
+          name: tool-config-${{ matrix.platform_short }}-image
       - name: Set TOOL_CONFIG_IMAGE
         id: tool_cfg_img
         env:
@@ -100,18 +100,18 @@ jobs:
           IS_PR: ${{ github.event_name == 'pull_request' }}
         run: |
           if [[ "$NEW_TOOLS" == "true" && "$IS_PR" == "true" ]]; then
-            docker load -i https-tool-config-${{ matrix.platform_short }}-image.tar
-            rm https-tool-config-${{ matrix.platform_short }}-image.tar
+            docker load -i tool-config-${{ matrix.platform_short }}-image.tar
+            rm tool-config-${{ matrix.platform_short }}-image.tar
             IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
             LOCAL_TAG=localhost:5000/local_tools_image:latest
             docker tag ${IMAGE} ${LOCAL_TAG}
             docker push ${LOCAL_TAG}
             echo "TOOL_CONFIG_IMAGE=${LOCAL_TAG}" >> $GITHUB_OUTPUT
           elif [[ "$NEW_TOOLS" == "true" ]]; then
-            echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/https-tool-config:${{ github.sha }}" >> $GITHUB_OUTPUT
+            echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/tool-config:${{ github.sha }}" >> $GITHUB_OUTPUT
           else
-            latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/https-tool-config")
-            echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/https-tool-config:${latest_tag}" >> $GITHUB_OUTPUT
+            latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/tool-config")
+            echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/tool-config:${latest_tag}" >> $GITHUB_OUTPUT
           fi
 
       - name: Build & publish

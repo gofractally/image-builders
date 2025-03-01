@@ -11,7 +11,6 @@ jobs:
     name: tool-config
     strategy:
       matrix:
-        protocol: ["http", "https"]
         runner: [ubuntu-latest, arm-runner-2]
         include:
         - runner: ubuntu-latest
@@ -32,7 +31,7 @@ jobs:
       - name: Preparation
         id: prep
         run: |
-          IMAGE="${{ matrix.protocol }}-tool-config"
+          IMAGE="tool-config"
           echo "image=${IMAGE,,}" >> $GITHUB_OUTPUT
 
       - name: Building ${{ matrix.platform_short }}
@@ -56,8 +55,6 @@ jobs:
           context: .
           push: true
           file: docker/tool-config.Dockerfile
-          build-args: |
-            protocol=${{ matrix.protocol }}
           tags: "ghcr.io/${{ github.repository_owner }}/${{ steps.prep.outputs.image }}:${{ github.sha }}-${{ matrix.platform_short }}"
           platforms: ${{ matrix.platform }}
           provenance: false
@@ -69,8 +66,6 @@ jobs:
         with:
           context: .
           file: docker/tool-config.Dockerfile
-          build-args: |
-            protocol=${{ matrix.protocol }}
           tags: "ghcr.io/${{ github.repository_owner }}/${{ steps.prep.outputs.image }}:${{ github.sha }}-${{ matrix.platform_short }}"
           platforms: ${{ matrix.platform }}
           outputs: type=docker,dest=${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image.tar
@@ -85,9 +80,6 @@ jobs:
   merge: 
     name: merge multi-platform images
     if: ${{ github.event_name != 'pull_request' }}
-    strategy:
-      matrix:
-        protocol: ["http", "https"]
     runs-on: ubuntu-latest
     needs: tool-config
     steps:
@@ -97,7 +89,7 @@ jobs:
       - name: Preparation
         id: prep
         run: |
-          IMAGE="${{ matrix.protocol }}-tool-config"
+          IMAGE="tool-config"
           echo "image=${IMAGE,,}" >> $GITHUB_OUTPUT
 
       - name: Login in to registry
