@@ -47,8 +47,8 @@ jobs:
       - name: Set TOOL_CONFIG version
         id: tool_cfg_img
         run: |
-          latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/http-tool-config")
-          echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/http-tool-config:${latest_tag}" >> $GITHUB_OUTPUT
+          latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/tool-config")
+          echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/tool-config:${latest_tag}" >> $GITHUB_OUTPUT
 
       - name: Build & Publish Image
         uses: docker/build-push-action@v5
