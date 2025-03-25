@@ -33,7 +33,7 @@ None
 
 ## `tool-config.yml`
 
-This reusable workflow generates an image that packages up configuration files for various third-party tools used by other images. These configurations are from tools such as prometheus, grafana, etc., which can be helpful for node operators looking for more statistics about psinode. 
+This reusable workflow generates an image that packages up configuration files for various third-party tools used by other images. This image has largely been deprecated and is currently only used to add some sample psinode configuration files into the final image.
 
 ### Input variables
 

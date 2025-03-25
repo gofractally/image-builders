@@ -14,13 +14,7 @@ An image based on Ubuntu 24.04 that contains an environment suitable for buildin
 
 ## tool-config
 
-A [scratch](https://hub.docker.com/_/scratch)-based image that contains configuration files for various third-party tooling required by psibase contributor and other downstream images to allow them to display the admin-sys monitoring dashboards (e.g. Prometheus, Grafana, etc.).
-
-This image has two variants: `http-tool-config` and `https-tool-config`.
-
-The `http-*` version is meant to be used when you're running psinode on a server behind a reverse proxy, in which case the external tools connect to psinode locally over http.
-
-The `https-*` version is meant to be used when you're connecting to psinode itself directly over https, which is most common in local development scenarios where you're not running psinode behind a reverse proxy, but you're still trying to connect over https. This version of the tooling image is used by default by the `psibase-contributor` image, which allows the development environment to expose psinode over https.
+A [scratch](https://hub.docker.com/_/scratch)-based image that contains configuration files for various third-party tooling required by psibase contributor and other downstream images. This image has largely been deprecated and is currently only used to add some sample psinode configuration files into the final image.
 
 ## psibase-contributor
 
