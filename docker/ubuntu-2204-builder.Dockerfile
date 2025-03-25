@@ -88,7 +88,7 @@ RUN cd /root \
     wasm32-wasip1           \
     # Cargo tools
     && /opt/cargo/bin/cargo install \
-    cargo-component@0.15.0  \
+    cargo-component@0.21.1  \
     mdbook                  \
     mdbook-linkcheck        \
     mdbook-mermaid          \
