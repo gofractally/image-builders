@@ -95,4 +95,3 @@ RUN cd /root \
     && chmod -R 777 $CARGO_HOME \
     && rm rustup.sh
 ENV PATH=$CARGO_HOME/bin:$PATH
-ENV CARGO_COMPONENT_CACHE_DIR=.cargo-component-cache
