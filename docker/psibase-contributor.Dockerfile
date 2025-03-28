@@ -86,6 +86,8 @@ export HOST_IP=$(ip route | awk "/default/ { print \$3 }") \
 ENV CCACHE_DIR=${PSINODE_PATH}/.caches/ccache
 ENV SCCACHE_DIR=${PSINODE_PATH}/.caches/sccache
 ENV CCACHE_CONFIGPATH=${PSINODE_PATH}/ccache.conf
+ENV CARGO_COMPONENT_CACHE_DIR=${PSINODE_PATH}/.caches/cargo-component
+ENV WASM_PACK_CACHE=${PSINODE_PATH}/.caches/wasm-pack
 
 LABEL org.opencontainers.image.title="psibase-contributor"
 LABEL org.opencontainers.image.description="Psibase development environment"
