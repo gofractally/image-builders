@@ -96,8 +96,10 @@ RUN cd /root \
     mdbook-tabs             \
     sccache                 \
     wasm-pack               \
+    cargo-generate@0.22.0 \
     # 
     && chmod -R 777 $RUSTUP_HOME \
     && chmod -R 777 $CARGO_HOME \
     && rm rustup.sh
+
 ENV PATH=$CARGO_HOME/bin:$PATH
