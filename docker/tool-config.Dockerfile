@@ -4,4 +4,4 @@ FROM scratch
 
 # psinode config
 COPY docker/conf/psinode/scripts /usr/local/bin/
-COPY docker/conf/psinode/configs /root/psibase/example-psinode-configs/
+COPY docker/conf/psinode/configs /root/example-psinode-configs/
