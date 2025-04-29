@@ -72,7 +72,8 @@ RUN <<EOT bash
     rm \$NODEPATH.tar.xz
     mv \$NODEPATH node-v20.11.0
     export PATH="/opt/node-v20.11.0/bin:$PATH"
-    npm i -g yarn
+    corepack enable
+    yarn set version stable
 EOT
 ENV PATH=/opt/node-v20.11.0/bin:$PATH
 
