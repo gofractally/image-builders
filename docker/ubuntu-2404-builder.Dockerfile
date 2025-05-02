@@ -66,7 +66,8 @@ RUN <<EOT bash
     rm \$NODEPATH.tar.xz
     mv \$NODEPATH node-v20.11.0
     export PATH="/opt/node-v20.11.0/bin:$PATH"
-    npm i -g yarn
+    corepack enable
+    corepack install -g yarn@stable
 EOT
 ENV PATH=/opt/node-v20.11.0/bin:$PATH
 
@@ -82,7 +83,7 @@ RUN cd /root \
     wasm32-wasip1           \
     # Cargo tools
     && /opt/cargo/bin/cargo install \
-    cargo-component@0.21.1  \
+    cargo-component@0.20.0 --locked  \
     mdbook                  \
     mdbook-linkcheck        \
     mdbook-mermaid          \
