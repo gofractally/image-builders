@@ -81,10 +81,8 @@ RUN <<EOT bash
     tar xzf /opt/yarn/yarn.tar.gz -C /opt/yarn/
     mv /opt/yarn/berry--yarnpkg-cli-4.9.1 /opt/yarn/berry-yarnpkg-cli-4-9-1
     rm /opt/yarn/yarn.tar.gz
-    cat > /opt/yarn/yarn << 'EOF'
-        #!/bin/sh
-        node /opt/yarn/berry-yarnpkg-cli-4-9-1/packages/yarnpkg-cli/bin/yarn.js "$@"
-    EOF
+    echo '#!/bin/sh' > /opt/yarn/yarn
+    echo 'node /opt/yarn/berry-yarnpkg-cli-4-9-1/packages/yarnpkg-cli/bin/yarn.js "$@"' >> /opt/yarn/yarn
     chmod +x /opt/yarn/yarn
     export PATH="/opt/yarn:$PATH"
     yarn --version
