@@ -78,16 +78,13 @@ RUN <<EOT bash
     rm /opt/yarn/yarn.tar.gz
     echo "n1"
     echo "#!/bin/sh" > /opt/yarn/yarn
-    echo "n2"
     echo 'node /opt/yarn/berry-yarnpkg-cli-4-9-1/packages/yarnpkg-cli/bin/yarn.js "$@"' >> /opt/yarn/yarn
-    echo "n3"
     chmod 775 /opt/yarn/yarn
-    echo "n4"
     cat /opt/yarn/yarn
-    echo "n5"
+    echo "n2"
     export PATH="/opt/yarn:$PATH"
     echo "PATH=$PATH"
-    echo "n6"
+    echo "n3"
     /opt/yarn/yarn --version
 EOT
 
