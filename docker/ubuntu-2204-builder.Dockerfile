@@ -86,7 +86,6 @@ RUN <<EOT bash
     echo 'node /opt/yarn/berry-yarnpkg-cli-4-9-1/packages/yarnpkg-cli/bin/yarn.js "\$@"' >> /opt/yarn/yarn
     chmod 775 /opt/yarn/yarn
     export PATH="/opt/yarn:$PATH"
-    /opt/yarn/yarn --version
 EOT
 
 ENV RUSTUP_HOME=/opt/rustup
