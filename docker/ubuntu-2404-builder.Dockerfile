@@ -72,15 +72,23 @@ ENV PATH=/opt/node-v20.11.0/bin:$PATH
 RUN <<EOT bash
     mkdir -p /opt/yarn
     curl -L -o /opt/yarn/yarn.tar.gz https://github.com/yarnpkg/berry/archive/refs/tags/@yarnpkg/cli/4.9.1.tar.gz
+    echo "n1"
     tar xzf /opt/yarn/yarn.tar.gz -C /opt/yarn/
+    echo "n2"
     mv /opt/yarn/berry--yarnpkg-cli-4.9.1 /opt/yarn/berry-yarnpkg-cli-4-9-1
+    echo "n3"
     rm /opt/yarn/yarn.tar.gz
-    cat > /opt/yarn/yarn << 'EOF'
-        #!/bin/sh
-        node /opt/yarn/berry-yarnpkg-cli-4-9-1/packages/yarnpkg-cli/bin/yarn.js "$@"
-    EOF
-    chmod +x /opt/yarn/yarn
+    echo "n4"
+    echo "#!/bin/sh" > /opt/yarn/yarn
+    echo "n5"
+    echo "node /opt/yarn/berry-yarnpkg-cli-4-9-1/packages/yarnpkg-cli/bin/yarn.js \"\$@\"" >> /opt/yarn/yarn
+    echo "n6"
+    chmod 775 /opt/yarn/yarn
+    echo "n7"
+    cat /opt/yarn/yarn
+    echo "n8"
     export PATH="/opt/yarn:$PATH"
+    echo "n9"
     yarn --version
 EOT
 ENV PATH=/opt/yarn:$PATH
