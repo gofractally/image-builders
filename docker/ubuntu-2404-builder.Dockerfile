@@ -77,7 +77,7 @@ RUN <<EOT bash
     mv /opt/yarn/berry--yarnpkg-cli-4.9.1 /opt/yarn/berry-yarnpkg-cli-4-9-1
     rm /opt/yarn/yarn.tar.gz
     echo "n1"
-    echo "#!/bin/sh" > /opt/yarn/yarn
+    echo '#!/bin/sh' > /opt/yarn/yarn
     echo 'node /opt/yarn/berry-yarnpkg-cli-4-9-1/packages/yarnpkg-cli/bin/yarn.js "$@"' >> /opt/yarn/yarn
     chmod 775 /opt/yarn/yarn
     cat /opt/yarn/yarn
