@@ -88,7 +88,7 @@ RUN <<EOT bash
     export PATH="/opt/yarn:$PATH"
     echo "PATH=$PATH"
     echo "n6"
-    yarn --version
+    /opt/yarn/yarn --version
 EOT
 
 ENV RUSTUP_HOME=/opt/rustup
