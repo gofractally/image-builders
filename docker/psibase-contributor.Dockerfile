@@ -79,7 +79,7 @@ export PS1="\u@\h \W\[\\033[32m\\]\\$(parse_git_branch)\\[\\033[00m\\] $ "\n\
  \n\
 alias ll="ls -alF"\n\
 alias ls="ls --color=auto"\n\
-export HOST_IP=$(ip route | awk "/default/ { print \$3 }") \
+export HOST_IP=${MAC_GW_IP:-$(ip route | awk "/default/ { print \$3 }")} \
 ' >> /root/.bashrc
 
 # Caches
