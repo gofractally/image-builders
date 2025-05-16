@@ -77,6 +77,7 @@ ENV PATH=/opt/node-v20.11.0/bin:$PATH
 
 ENV PATH=/opt/yarn:$PATH
 RUN <<EOT bash
+    set -eux
     mkdir -p /opt/yarn
     curl -L -o /opt/yarn/yarn.tar.gz https://github.com/yarnpkg/berry/archive/refs/tags/@yarnpkg/cli/4.9.1.tar.gz
     tar xzf /opt/yarn/yarn.tar.gz -C /opt/yarn/
