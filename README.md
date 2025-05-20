@@ -31,11 +31,10 @@ This image is used to run [psinode](https://docs.psibase.io/run-infrastructure/c
 If using this image to run psinode on your local machine, you can run it with:
 
 ```
-docker run --rm --name psinode -p 8080:8080 -p 3000:3000 -p 9090:9090 --network psinode_network ghcr.io/gofractally/psinode:VERSION
+docker run --rm --name psinode -p 8080:8080 --network psinode_network ghcr.io/gofractally/psinode:VERSION
 ```
-> Note 1: If you don't need the [x-admin](https://docs.psibase.io/default-apps/x-admin.html) monitoring dashboards, then you only need to expose Psinode container port 8080.
 
-> Note 2: Creating and using a custom docker network simply makes it easier to connect to the psinode container from other docker containers. This is helpful, for example, if you plan to interact with the container from a separate `psibase` container. If you only intend to interact with the container over TCP in the browser, then you don't need to use a custom docker network.
+> Note: Creating and using a custom docker network simply makes it easier to connect to the psinode container from other docker containers. This is helpful, for example, if you plan to interact with the container from a separate `psibase` container. If you only intend to interact with the container over TCP in the browser, then you don't need to use a custom docker network.
 
 ### Booting the chain
 
@@ -69,3 +68,17 @@ psibase -s <PRIV_KEY> -a http://<PSINODE_URL>:8080 create bob --key <PUBKEY> --s
 # Github workflows
 
 For more information on the CI/CD workflows that are responsible for generating and uploading all of the aforementioned docker images, see [WORKFLOWS.md](./WORKFLOWS.md).
+
+# Building locally
+
+To build these images locally, then from the workspace root, run:
+
+```
+docker image build -t <IMAGE_NAME> -f ./docker/<filename>.Dockerfile .
+```
+
+For example, to build the 2404 builder, you could run:
+
+```
+docker image build -t ubuntu-2404-builder-local -f ./docker/ubuntu-2404-builder.Dockerfile .
+```
