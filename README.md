@@ -80,5 +80,5 @@ docker image build -t <IMAGE_NAME> -f ./docker/<filename>.Dockerfile .
 For example, to build the 2404 builder, you could run:
 
 ```
-docker image build -t ubuntu-2404-builder-local -f ./docker/ubuntu-2404-builder.Dockerfile.Dockerfile .
+docker image build -t ubuntu-2404-builder-local -f ./docker/ubuntu-2404-builder.Dockerfile .
 ```
