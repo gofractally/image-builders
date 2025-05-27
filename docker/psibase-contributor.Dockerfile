@@ -16,6 +16,7 @@ RUN export DEBIAN_FRONTEND=noninteractive   \
     && apt-get install -yq                  \
         apt-transport-https                 \
         clang-format-18                     \
+        clangd                              \
         curl                                \
         gdb                                 \
         gnupg2                              \
