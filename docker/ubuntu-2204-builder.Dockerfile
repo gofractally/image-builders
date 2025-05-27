@@ -94,7 +94,7 @@ ENV CARGO_HOME=/opt/cargo
 RUN cd /root \
     && curl --proto '=https' --tlsv1.2 -sSf -o rustup.sh https://sh.rustup.rs \
     && chmod 700 rustup.sh \
-    && ./rustup.sh -y --no-modify-path --default-toolchain 1.85.0 \
+    && ./rustup.sh -y --no-modify-path --default-toolchain 1.86.0 \
     # Compile targets
     && /opt/cargo/bin/rustup target add \
     wasm32-unknown-unknown  \
