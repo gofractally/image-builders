@@ -18,6 +18,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     libtool                 \
     pkg-config              \
     python3-requests        \
+    softhsm2                \
     strace                  \
     wget                    \
     zstd                    \
