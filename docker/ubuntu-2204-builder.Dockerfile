@@ -21,6 +21,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     softhsm2                \
     strace                  \
     wget                    \
+    zlib1g-dev              \
     zstd                    \
     #   Clang / LLVM
     && wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc \

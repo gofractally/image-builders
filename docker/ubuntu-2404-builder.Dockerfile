@@ -21,6 +21,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     softhsm2                \
     strace                  \
     wget                    \
+    zlib1g-dev              \
     zstd                    \
     clang-18                \
     libclang-18-dev         \
