@@ -31,7 +31,7 @@ RUN export DEBIAN_FRONTEND=noninteractive   \
     && rm -rf /var/lib/apt/lists/*
 
 # Use bash shell
-ENV SHELL /bin/bash
+ENV SHEL=/bin/bash
 
 # Need bash shell for ansi quotes
 SHELL ["/bin/bash", "-c"]

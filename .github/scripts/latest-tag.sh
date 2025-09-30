@@ -14,5 +14,5 @@ TOKEN="$(
 _curl(){ curl -s -H "Authorization: Bearer ${TOKEN}" "$1" 2>&1; }
 
 # get most recent tag
-LAST_TAG=$(_curl "https://ghcr.io/v2/${USER_IMAGE}/tags/list" | jq -r '.tags[-1]')
+LAST_TAG=$(_curl "https://ghcr.io/v2/${USER_IMAGE}/tags/list?n=1000" | jq -r '.tags[-1]')
 echo "${LAST_TAG}"
