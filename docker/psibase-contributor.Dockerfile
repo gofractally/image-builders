@@ -18,6 +18,7 @@ RUN export DEBIAN_FRONTEND=noninteractive   \
         clang-format-18                     \
         clangd-18                           \
         curl                                \
+        direnv                              \
         gdb                                 \
         gnupg2                              \
         iproute2                            \
