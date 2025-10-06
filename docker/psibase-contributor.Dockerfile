@@ -16,6 +16,7 @@ RUN export DEBIAN_FRONTEND=noninteractive   \
     && apt-get install -yq                  \
         apt-transport-https                 \
         clang-format-18                     \
+        clangd-18                           \
         curl                                \
         gdb                                 \
         gnupg2                              \
@@ -30,7 +31,7 @@ RUN export DEBIAN_FRONTEND=noninteractive   \
     && rm -rf /var/lib/apt/lists/*
 
 # Use bash shell
-ENV SHELL /bin/bash
+ENV SHELL=/bin/bash
 
 # Need bash shell for ansi quotes
 SHELL ["/bin/bash", "-c"]
