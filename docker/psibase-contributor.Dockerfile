@@ -57,7 +57,7 @@ COPY --from=toolconfig / /
 RUN $CARGO_HOME/bin/cargo install \
     cargo-edit \
     wasm-tools \
-    cargo-generate@0.22.0 
+    cargo-generate@0.23.5
 
 RUN npm i -g \
     eslint
