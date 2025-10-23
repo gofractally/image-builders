@@ -51,8 +51,8 @@ RUN mkdir -p ${PSINODE_PATH}    \
 COPY --from=toolconfig / /
 
 # Install nice-to-have rust/wasm tooling
-RUN $CARGO_HOME/bin/cargo install \
-    cargo-edit@0.13.6 \
+RUN $CARGO_HOME/bin/cargo install --locked \
+    cargo-edit \
     wasm-tools
 
 RUN npm i -g \
