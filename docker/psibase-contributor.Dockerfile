@@ -18,6 +18,7 @@ RUN export DEBIAN_FRONTEND=noninteractive   \
         clang-format-18                     \
         clangd-18                           \
         curl                                \
+        direnv                              \
         gdb                                 \
         gnupg2                              \
         iproute2                            \
@@ -41,14 +42,10 @@ RUN softhsm2-util --init-token --slot 0 --label "psibase SoftHSM" --pin ${SOFTHS
 
 # Install psibase
 ENV PSINODE_PATH=/root/psibase
-ENV PATH=${PSINODE_PATH}/build/psidk/bin:$PATH
 RUN mkdir -p ${PSINODE_PATH}    \
     && cd ${PSINODE_PATH}       \
     && git clone https://github.com/gofractally/psibase.git . \
     && git submodule update --init --recursive
-
-# Add locally built rust programs to path
-ENV PATH=${PSINODE_PATH}/build/rust/release:$PATH
 
 # Copy in tool config
 COPY --from=toolconfig / /
@@ -79,7 +76,8 @@ export PS1="\u@\h \W\[\\033[32m\\]\\$(parse_git_branch)\\[\\033[00m\\] $ "\n\
  \n\
 alias ll="ls -alF"\n\
 alias ls="ls --color=auto"\n\
-export HOST_IP=${MAC_GW_IP:-$(ip route | awk "/default/ { print \$3 }")} \
+export HOST_IP=${MAC_GW_IP:-$(ip route | awk "/default/ { print \$3 }")}\n\
+eval "$(direnv hook bash)"\n\
 ' >> /root/.bashrc
 
 # Caches
