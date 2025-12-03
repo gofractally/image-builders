@@ -52,7 +52,7 @@ COPY --from=toolconfig / /
 
 # Install nice-to-have rust/wasm tooling
 RUN $CARGO_HOME/bin/cargo install --locked \
-    cargo-edit0.13.7 \
+    cargo-edit@0.13.7 \
     wasm-tools
 
 RUN npm i -g \
