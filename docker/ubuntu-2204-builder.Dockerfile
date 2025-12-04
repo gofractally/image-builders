@@ -18,6 +18,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     libtool                 \
     pkg-config              \
     python3-requests        \
+    python3-websockets      \
     softhsm2                \
     strace                  \
     wget                    \
@@ -104,11 +105,11 @@ RUN cd /root \
     # Cargo tools
     && /opt/cargo/bin/cargo install \
     cargo-component@0.15.0 --locked  \
-    mdbook                  \
-    mdbook-linkcheck        \
-    mdbook-mermaid          \
-    mdbook-pagetoc          \
-    mdbook-tabs             \
+    mdbook@0.4.52           \
+    mdbook-linkcheck@0.7.7  \
+    mdbook-mermaid@0.16.2   \
+    mdbook-pagetoc@0.2.2    \
+    mdbook-tabs@0.2.3       \
     sccache                 \
     wasm-pack               \
     cargo-generate@0.23.5   \
