@@ -18,7 +18,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     libtool                 \
     pkg-config              \
     python3-requests        \
-    python3-websockets      \
+    python3-pip             \
     softhsm2                \
     strace                  \
     wget                    \
@@ -91,6 +91,8 @@ RUN <<EOT bash
     chmod 775 /opt/yarn/yarn
     export PATH="/opt/yarn:$PATH"
 EOT
+
+RUN pip3 install 'websockets==10.4'
 
 ENV RUSTUP_HOME=/opt/rustup
 ENV CARGO_HOME=/opt/cargo
