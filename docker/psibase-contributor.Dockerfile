@@ -58,6 +58,10 @@ RUN $CARGO_HOME/bin/cargo install --locked \
 RUN npm i -g \
     eslint
 
+# Install Cursor agent CLI
+ENV PATH="/root/.local/bin:${PATH}"
+RUN curl https://cursor.com/install -fsS | bash
+
 # Expose ports
 EXPOSE 8080
 
