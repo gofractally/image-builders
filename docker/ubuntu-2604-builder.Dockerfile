@@ -105,7 +105,7 @@ RUN cd /root \
     mdbook-pagetoc@0.2.2    \
     mdbook-tabs@0.2.3       \
     sccache                 \
-    wasm-pack               \
+    wasm-pack@0.13.1        \
     cargo-generate@0.23.5   \
     # 
     && chmod -R 777 $RUSTUP_HOME \
