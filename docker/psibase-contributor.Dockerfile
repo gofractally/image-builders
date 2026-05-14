@@ -31,6 +31,21 @@ RUN export DEBIAN_FRONTEND=noninteractive   \
     && apt-get clean -yq                    \
     && rm -rf /var/lib/apt/lists/*
 
+# Install GitHub CLI (gh) from the official cli.github.com APT repository
+# Ref: https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+RUN export DEBIAN_FRONTEND=noninteractive                                       \
+    && mkdir -p -m 755 /etc/apt/keyrings                                        \
+    && wget -nv -O /etc/apt/keyrings/githubcli-archive-keyring.gpg              \
+        https://cli.github.com/packages/githubcli-archive-keyring.gpg           \
+    && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg               \
+    && mkdir -p -m 755 /etc/apt/sources.list.d                                  \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+        > /etc/apt/sources.list.d/github-cli.list                               \
+    && apt-get update                                                           \
+    && apt-get install -yq gh                                                   \
+    && apt-get clean -yq                                                        \
+    && rm -rf /var/lib/apt/lists/*
+
 # Use bash shell
 ENV SHELL=/bin/bash
 
@@ -57,6 +72,10 @@ RUN $CARGO_HOME/bin/cargo install --locked \
 
 RUN npm i -g \
     eslint
+
+# Install Cursor agent CLI
+ENV PATH="/root/.local/bin:${PATH}"
+RUN curl https://cursor.com/install -fsS | bash
 
 # Expose ports
 EXPOSE 8080
