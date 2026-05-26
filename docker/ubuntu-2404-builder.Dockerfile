@@ -28,17 +28,18 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     libclang-18-dev         \
     lld-18                  \
     llvm-18                 \
-    libboost1.83-dev        \
-    libboost-chrono1.83-dev          \
-    libboost-date-time1.83-dev       \
-    libboost-filesystem1.83-dev      \
-    libboost-iostreams1.83-dev       \
-    libboost-log1.83-dev             \
-    libboost-program-options1.83-dev \
-    libboost-system1.83-dev          \
-    libboost-test1.83-dev            \
     && apt-get clean -yq        \
     && rm -rf /var/lib/apt/lists/*
+
+RUN cd /root \
+    && curl -LO https://archives.boost.io/release/1.88.0/source/boost_1_88_0.tar.bz2 \
+    && tar xf boost_1_88_0.tar.bz2 \
+    && cd boost_1_88_0 \
+    && ./bootstrap.sh \
+    && ./b2 --prefix=/usr/local --build-dir=build variant=release --with-chrono --with-date_time \
+    --with-filesystem --with-iostreams --with-log --with-program_options --with-system --with-test install \
+    && cd /root \
+    && rm -rf boost*
 
 # https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-24
 ENV WASI_SDK_PREFIX=/usr/lib/llvm-18
