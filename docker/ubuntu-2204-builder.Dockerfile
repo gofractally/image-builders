@@ -37,9 +37,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && rm -rf /var/lib/apt/lists/*
 
 RUN cd /root \
-    && curl -LO https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2 \
-    && tar xf boost_1_87_0.tar.bz2 \
-    && cd boost_1_87_0 \
+    && curl -LO https://archives.boost.io/release/1.88.0/source/boost_1_88_0.tar.bz2 \
+    && tar xf boost_1_88_0.tar.bz2 \
+    && cd boost_1_88_0 \
     && ./bootstrap.sh \
     && ./b2 --prefix=/usr/local --build-dir=build variant=release --with-chrono --with-date_time \
     --with-filesystem --with-iostreams --with-log --with-program_options --with-system --with-test install \
@@ -113,7 +113,7 @@ RUN cd /root \
     mdbook-pagetoc@0.2.2    \
     mdbook-tabs@0.2.3       \
     sccache                 \
-    wasm-pack               \
+    wasm-pack@0.13.1        \
     cargo-generate@0.23.5   \
     # 
     && chmod -R 777 $RUSTUP_HOME \
