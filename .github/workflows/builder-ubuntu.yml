@@ -29,6 +29,14 @@ jobs:
     runs-on: ${{ matrix.runner }}
 
     steps:
+      - name: (PR only) - Maximize build space
+        if: ${{ github.event_name == 'pull_request' && matrix.runner == 'ubuntu-latest' }}
+        uses: James-Mart/maximize-build-space@master
+        with:
+          root-reserve-mb: 24576
+          temp-reserve-mb: 512
+          remove-android: "true"
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -85,6 +93,28 @@ jobs:
           name: ${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image
           path: ${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image.tar
           retention-days: 1
+
+      - name: (PR only) - Load builder image
+        if: ${{ github.event_name == 'pull_request' }}
+        run: docker load -i ${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image.tar
+
+      - name: (PR only) - Checkout psibase
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/checkout@v4
+        with:
+          repository: gofractally/psibase
+          ref: main
+          path: psibase
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: (PR only) - Validate with psibase build
+        if: ${{ github.event_name == 'pull_request' }}
+        working-directory: psibase
+        run: >
+          bash .github/scripts/build.sh "$PWD"
+          "ghcr.io/${{ github.repository_owner }}/${{ steps.prep.outputs.image }}:${{ github.sha }}-${{ matrix.platform_short }}"
+          "${{ inputs.ubuntu_version }}"
 
   merge: 
     name: merge multi-platform images
