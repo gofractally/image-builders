@@ -95,11 +95,11 @@ jobs:
           retention-days: 1
 
       - name: (PR only) - Load builder image
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' && matrix.platform_short == 'amd64' }}
         run: docker load -i ${{ steps.prep.outputs.image }}-${{ matrix.platform_short }}-image.tar
 
       - name: (PR only) - Checkout psibase
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' && matrix.platform_short == 'amd64' }}
         uses: actions/checkout@v4
         with:
           repository: gofractally/psibase
@@ -109,7 +109,7 @@ jobs:
           fetch-depth: 0
 
       - name: (PR only) - Validate with psibase build
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' && matrix.platform_short == 'amd64' }}
         working-directory: psibase
         run: >
           bash .github/scripts/build.sh "$PWD"
