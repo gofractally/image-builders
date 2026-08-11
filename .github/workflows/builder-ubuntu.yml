@@ -3,6 +3,7 @@ name: Generate ubuntu builder images
 
 env:
   GITHUB_OUTPUT: ""
+  PSIBASE_VALIDATION_REF: v0.25.0-pre
 
 on:
   workflow_call:
@@ -103,7 +104,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: gofractally/psibase
-          ref: main
+          ref: ${{ env.PSIBASE_VALIDATION_REF }}
           path: psibase
           submodules: recursive
           fetch-depth: 0
