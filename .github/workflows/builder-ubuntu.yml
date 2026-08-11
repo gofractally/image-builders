@@ -3,7 +3,9 @@ name: Generate ubuntu builder images
 
 env:
   GITHUB_OUTPUT: ""
-  PSIBASE_VALIDATION_REF: v0.25.0-pre
+  # Pin to a psibase ref that includes build.sh skip-pull-when-local (PR #1988).
+  # Switch to v0.26.0-pre once that release lands.
+  PSIBASE_VALIDATION_REF: a2af0faef9486805715f87d529c37db751de3e48
 
 on:
   workflow_call:
