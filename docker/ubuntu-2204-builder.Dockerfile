@@ -82,12 +82,12 @@ ENV PATH=/opt/yarn:$PATH
 RUN <<EOT bash
     set -eux
     mkdir -p /opt/yarn
-    curl -L -o /opt/yarn/yarn.tar.gz https://github.com/yarnpkg/berry/archive/refs/tags/@yarnpkg/cli/4.9.1.tar.gz
+    curl -L -o /opt/yarn/yarn.tar.gz https://github.com/yarnpkg/berry/archive/refs/tags/@yarnpkg/cli/4.18.0.tar.gz
     tar xzf /opt/yarn/yarn.tar.gz -C /opt/yarn/
-    mv /opt/yarn/berry--yarnpkg-cli-4.9.1 /opt/yarn/berry-yarnpkg-cli-4-9-1
+    mv /opt/yarn/berry--yarnpkg-cli-4.18.0 /opt/yarn/berry-yarnpkg-cli-4-18-0
     rm /opt/yarn/yarn.tar.gz
     echo '#!/bin/sh' > /opt/yarn/yarn
-    echo 'node /opt/yarn/berry-yarnpkg-cli-4-9-1/packages/yarnpkg-cli/bin/yarn.js "\$@"' >> /opt/yarn/yarn
+    echo 'node /opt/yarn/berry-yarnpkg-cli-4-18-0/packages/yarnpkg-cli/bin/yarn.js "\$@"' >> /opt/yarn/yarn
     chmod 775 /opt/yarn/yarn
     export PATH="/opt/yarn:$PATH"
 EOT
