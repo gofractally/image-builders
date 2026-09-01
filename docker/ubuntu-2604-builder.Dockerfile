@@ -58,30 +58,30 @@ RUN cd ${WASI_SDK_PREFIX}/lib/clang/18/                         \
 RUN <<EOT bash
     set -eux
     if [ "amd64" = "$TARGETARCH" ]; then
-        export NODEPATH=node-v20.11.0-linux-x64
+        export NODEPATH=node-v24.20.0-linux-x64
     elif [ "arm64" = "$TARGETARCH" ]; then
-        export NODEPATH=node-v20.11.0-linux-arm64
+        export NODEPATH=node-v24.20.0-linux-arm64
     fi
 
     cd /opt
-    curl -LO https://nodejs.org/dist/v20.11.0/\$NODEPATH.tar.xz
+    curl -LO https://nodejs.org/dist/v24.20.0/\$NODEPATH.tar.xz
     tar xf \$NODEPATH.tar.xz
     rm \$NODEPATH.tar.xz
-    mv \$NODEPATH node-v20.11.0
-    export PATH="/opt/node-v20.11.0/bin:$PATH"
+    mv \$NODEPATH node-v24.20.0
+    export PATH="/opt/node-v24.20.0/bin:$PATH"
 EOT
-ENV PATH=/opt/node-v20.11.0/bin:$PATH
+ENV PATH=/opt/node-v24.20.0/bin:$PATH
 
 ENV PATH=/opt/yarn:$PATH
 RUN <<EOT bash
     set -eux
     mkdir -p /opt/yarn
-    curl -L -o /opt/yarn/yarn.tar.gz https://github.com/yarnpkg/berry/archive/refs/tags/@yarnpkg/cli/4.9.1.tar.gz
+    curl -L -o /opt/yarn/yarn.tar.gz https://github.com/yarnpkg/berry/archive/refs/tags/@yarnpkg/cli/4.18.0.tar.gz
     tar xzf /opt/yarn/yarn.tar.gz -C /opt/yarn/
-    mv /opt/yarn/berry--yarnpkg-cli-4.9.1 /opt/yarn/berry-yarnpkg-cli-4-9-1
+    mv /opt/yarn/berry--yarnpkg-cli-4.18.0 /opt/yarn/berry-yarnpkg-cli-4-18-0
     rm /opt/yarn/yarn.tar.gz
     echo '#!/bin/sh' > /opt/yarn/yarn
-    echo 'node /opt/yarn/berry-yarnpkg-cli-4-9-1/packages/yarnpkg-cli/bin/yarn.js "\$@"' >> /opt/yarn/yarn
+    echo 'node /opt/yarn/berry-yarnpkg-cli-4-18-0/packages/yarnpkg-cli/bin/yarn.js "\$@"' >> /opt/yarn/yarn
     chmod 775 /opt/yarn/yarn
     export PATH="/opt/yarn:$PATH"
 EOT
