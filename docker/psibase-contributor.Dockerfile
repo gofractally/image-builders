@@ -66,6 +66,8 @@ RUN mkdir -p ${PSINODE_PATH}    \
 COPY --from=toolconfig / /
 
 # Install nice-to-have rust/wasm tooling
+RUN rustup component add rust-analyzer
+
 RUN $CARGO_HOME/bin/cargo install --locked \
     cargo-edit@0.13.7 \
     wasm-tools
