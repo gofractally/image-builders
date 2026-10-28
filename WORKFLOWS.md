@@ -13,12 +13,16 @@ This workflow builds images for the `psinode` and `psibase` CLI tools.
 * `version` - The tag of the resulting images. When `psidk_run_id` is empty, it must be the name of the psibase git release tag whose `psidk-ubuntu-2204` asset the images are built from.
 * `psidk_run_id` (optional) - The id of a psibase Actions run that uploaded a `psidk-ubuntu-2204` artifact.
   * When empty, the images are built from the release asset and pushed to GHCR as `psinode:<version>` and `psibase:<version>` multi-arch manifests.
-  * When set, the images are built from that run's artifact and nothing is pushed to GHCR. Each architecture's images are uploaded as docker-loadable run artifacts `psinode-<arch>-image` and `psibase-<arch>-image`, tagged `psinode:<version>-<arch>` and `psibase:<version>-<arch>`. Downloading the artifact requires the `PSIBASE_ARTIFACT_TOKEN` repository secret, a token with read access to psibase Actions artifacts.
+  * When set, the images are built from that run's artifact and nothing is pushed to GHCR. Each architecture's images are uploaded as docker-loadable run artifacts `psinode-<arch>-image` and `psibase-<arch>-image`, tagged `psinode:<version>-<arch>` and `psibase:<version>-<arch>`.
+
+### GitHub repository secrets
+
+* `PSIBASE_ARTIFACT_TOKEN` - Required when `psidk_run_id` is set. A token with read access to psibase Actions artifacts, used to download the run's `psidk-ubuntu-2204` artifact.
 
 ### How to run
 
 * This workflow can be manually run.
-* This workflow is automatically triggered with only `version` whenever a new release is published in the `psibase` repository.
+* This workflow is automatically triggered whenever a new release is published in the `psibase` repository.
 
 ## `_dispatcher.yml`
 
