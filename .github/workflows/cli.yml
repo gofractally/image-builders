@@ -7,12 +7,49 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Corresponds to git tag, e.g. "vX.Y.Z"'
+        description: 'Image tag; for a published release, its git tag, e.g. "vX.Y.Z"'
         required: true
+      psidk_run_id:
+        description: 'psibase Actions run id that uploaded psidk-ubuntu-2204. Empty builds from the release for version and publishes to GHCR.'
+        required: false
+        default: ''
 
 jobs:
+  fetch-psidk:
+    name: fetch psidk-ubuntu-2204
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release asset
+        if: ${{ github.event.inputs.psidk_run_id == '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ github.event.inputs.version }}
+        run: gh release download "$VERSION" -R gofractally/psibase -p psidk-ubuntu-2204.tar.gz
+
+      - name: Download run artifact
+        if: ${{ github.event.inputs.psidk_run_id != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.PSIBASE_ARTIFACT_TOKEN }}
+          RUN_ID: ${{ github.event.inputs.psidk_run_id }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::Secret PSIBASE_ARTIFACT_TOKEN is not set; it is required to download psibase run artifacts"
+            exit 1
+          fi
+          gh run download "$RUN_ID" -R gofractally/psibase -n psidk-ubuntu-2204
+
+      - name: Upload psidk for image builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: psidk-ubuntu-2204
+          path: psidk-ubuntu-2204.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
   psinode-cli-builder:
     name: psinode-cli-builder
+    if: ${{ github.event.inputs.psidk_run_id == '' }}
+    needs: fetch-psidk
     strategy:
       matrix:
         runner: [ubuntu-latest, arm-runner-2]
@@ -33,6 +70,11 @@ jobs:
 
       - name: Building psinode-${{ matrix.platform_short }}
         run: true
+
+      - name: Download psidk
+        uses: actions/download-artifact@v4
+        with:
+          name: psidk-ubuntu-2204
 
       - name: Docker Buildx setup
         uses: docker/setup-buildx-action@v3
@@ -62,7 +104,6 @@ jobs:
           platforms: ${{ matrix.platform }}
           provenance: false
           build-args: |
-            RELEASE_TAG=${{ github.event.inputs.version }}
             TOOL_CONFIG_IMAGE=${{ steps.tool_cfg_img.outputs.TOOL_CONFIG_IMAGE }}
 
   psinode-cli-merger:
@@ -135,7 +176,7 @@ jobs:
           platforms: ${{ matrix.platform }}
           provenance: false
           build-args: |
-            psinode_version=${{ github.event.inputs.version }}
+            PSINODE_IMAGE=ghcr.io/${{ github.repository_owner }}/psinode:${{ github.event.inputs.version }}
 
   psibase-cli-merger:
     name: merge psibase multi-platform images
@@ -160,3 +201,93 @@ jobs:
             --amend ${IMAGE}-arm64 \
             --amend ${IMAGE}-amd64
           docker manifest push ${IMAGE}
+
+  cli-artifact-builder:
+    name: cli-artifact-builder
+    if: ${{ github.event.inputs.psidk_run_id != '' }}
+    needs: fetch-psidk
+    strategy:
+      matrix:
+        runner: [ubuntu-latest, arm-runner-2]
+        include:
+          - runner: ubuntu-latest
+            platform: "linux/amd64"
+            platform_short: "amd64"
+          - runner: arm-runner-2
+            platform: "linux/arm64"
+            platform_short: "arm64"
+    runs-on: ${{ matrix.runner }}
+    env:
+      PSINODE_IMAGE: psinode:${{ github.event.inputs.version }}-${{ matrix.platform_short }}
+      PSIBASE_IMAGE: psibase:${{ github.event.inputs.version }}-${{ matrix.platform_short }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+          fetch-depth: 0
+
+      - name: Download psidk
+        uses: actions/download-artifact@v4
+        with:
+          name: psidk-ubuntu-2204
+
+      # The docker driver builds into the local image store, which is where
+      # the psibase build finds the psinode image built on this runner.
+      - name: Docker Buildx setup
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker
+
+      - name: Set TOOL_CONFIG version
+        id: tool_cfg_img
+        run: |
+          latest_tag=$(./.github/scripts/latest-tag.sh "gofractally/tool-config")
+          echo "TOOL_CONFIG_IMAGE=ghcr.io/gofractally/tool-config:${latest_tag}" >> $GITHUB_OUTPUT
+
+      - name: Build psinode image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          pull: true
+          file: docker/psinode.Dockerfile
+          no-cache: true
+          tags: ${{ env.PSINODE_IMAGE }}
+          platforms: ${{ matrix.platform }}
+          provenance: false
+          build-args: |
+            TOOL_CONFIG_IMAGE=${{ steps.tool_cfg_img.outputs.TOOL_CONFIG_IMAGE }}
+
+      # No pull: the psinode base exists only in the local image store.
+      - name: Build psibase image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          file: docker/psibase.Dockerfile
+          no-cache: true
+          tags: ${{ env.PSIBASE_IMAGE }}
+          platforms: ${{ matrix.platform }}
+          provenance: false
+          build-args: |
+            PSINODE_IMAGE=${{ env.PSINODE_IMAGE }}
+
+      - name: Save image archives
+        run: |
+          docker save -o psinode-${{ matrix.platform_short }}-image.tar "$PSINODE_IMAGE"
+          docker save -o psibase-${{ matrix.platform_short }}-image.tar "$PSIBASE_IMAGE"
+
+      - name: Upload psinode image archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: psinode-${{ matrix.platform_short }}-image
+          path: psinode-${{ matrix.platform_short }}-image.tar
+          if-no-files-found: error
+
+      - name: Upload psibase image archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: psibase-${{ matrix.platform_short }}-image
+          path: psibase-${{ matrix.platform_short }}-image.tar
+          if-no-files-found: error

@@ -4,7 +4,6 @@ FROM ${TOOL_CONFIG_IMAGE} AS toolconfig
 FROM ubuntu:22.04
 
 ARG TARGETARCH
-ARG RELEASE_TAG
 ARG SOFTHSM_PIN="Ch4ng#Me!"
 
 RUN export DEBIAN_FRONTEND=noninteractive   \
@@ -29,13 +28,12 @@ ENV SHELL /bin/bash
 SHELL ["/bin/bash", "-c"]
 
 # Install Psidk
-RUN wget https://github.com/gofractally/psibase/releases/download/${RELEASE_TAG}/psidk-ubuntu-2204.tar.gz \
-    && tar xf psidk-ubuntu-2204.tar.gz          \
+RUN --mount=type=bind,source=psidk-ubuntu-2204.tar.gz,target=/tmp/psidk-ubuntu-2204.tar.gz \
+    tar xf /tmp/psidk-ubuntu-2204.tar.gz    \
     psidk-ubuntu-2204/bin/psinode           \
     psidk-ubuntu-2204/bin/psibase           \
     psidk-ubuntu-2204/share/psibase/        \
     psidk-ubuntu-2204/share/man/            \
-    && rm psidk-ubuntu-2204.tar.gz              \
     && cp psidk-ubuntu-2204/share/man/* /usr/share/man/man1/
 
 
