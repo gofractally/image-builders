@@ -84,3 +84,5 @@ For example, to build the 2404 builder, you could run:
 ```
 docker image build -t ubuntu-2404-builder-local -f ./docker/ubuntu-2404-builder.Dockerfile .
 ```
+
+The psinode image installs psidk from a `psidk-ubuntu-2204.tar.gz` in the workspace root, so place one there before building it.

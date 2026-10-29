@@ -10,7 +10,14 @@ This workflow builds images for the `psinode` and `psibase` CLI tools.
 
 ### Input variables
 
-* `version` - Must be set to the name of the git release tag of psinode on which the resulting CLI images should be based. 
+* `version` - The tag of the resulting images. When `psidk_run_id` is empty, it must be the name of the psibase git release tag whose `psidk-ubuntu-2204` asset the images are built from.
+* `psidk_run_id` (optional) - The id of a psibase Actions run that uploaded a `psidk-ubuntu-2204` artifact.
+  * When empty, the images are built from the release asset and pushed to GHCR as `psinode:<version>` and `psibase:<version>` multi-arch manifests.
+  * When set, the images are built from that run's artifact and nothing is pushed to GHCR. Each architecture's images are uploaded as docker-loadable run artifacts `psinode-<arch>-image` and `psibase-<arch>-image`, tagged `psinode:<version>-<arch>` and `psibase:<version>-<arch>`.
+
+### GitHub repository secrets
+
+* `PSIBASE_ARTIFACT_TOKEN` - Required when `psidk_run_id` is set. A token with read access to psibase Actions artifacts, used to download the run's `psidk-ubuntu-2204` artifact.
 
 ### How to run
 

@@ -1,7 +1,7 @@
 # Workaround because the ARG doesn't expand properly in COPY
 # https://stackoverflow.com/a/63472135
-ARG psinode_version
-FROM ghcr.io/gofractally/psinode:$psinode_version as psinode
+ARG PSINODE_IMAGE
+FROM ${PSINODE_IMAGE} AS psinode
 
 FROM ubuntu:22.04
 COPY --from=psinode /opt/psidk-ubuntu-2204/bin/psibase /opt/psidk-ubuntu-2204/bin/psibase
