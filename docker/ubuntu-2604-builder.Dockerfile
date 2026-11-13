@@ -86,6 +86,22 @@ RUN <<EOT bash
     export PATH="/opt/yarn:$PATH"
 EOT
 
+# Playwright browsers for e2e/. Version must match psibase e2e/@playwright/test.
+ARG PLAYWRIGHT_VERSION=1.64.1
+ENV PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+RUN <<EOT bash
+    set -eux
+    mkdir -p /tmp/pw-install /opt/ms-playwright
+    cd /tmp/pw-install
+    npm init -y
+    npm install --no-save "@playwright/test@${PLAYWRIGHT_VERSION}"
+    npx playwright install --with-deps chromium webkit ffmpeg
+    chmod -R a+rX /opt/ms-playwright
+    cd /
+    rm -rf /tmp/pw-install
+EOT
+
 ENV RUSTUP_HOME=/opt/rustup
 ENV CARGO_HOME=/opt/cargo
 RUN cd /root \
