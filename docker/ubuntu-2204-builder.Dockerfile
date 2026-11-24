@@ -137,3 +137,55 @@ RUN cd /root \
     && rm rustup.sh
 
 ENV PATH=$CARGO_HOME/bin:$PATH
+# Toolchain for branches that compile services with WebAssembly wide
+# arithmetic and whose native code needs a C++23 standard library. Everything
+# here is installed BESIDE the defaults above, which are unchanged, so a branch
+# that does not ask for these tools builds exactly as before (psibase main was
+# built and tested in this image without opting in). A build opts in with
+#
+#   PATH=/opt/binaryen-133/bin:/opt/wasi-sdk-29/bin:$PATH
+#   WASI_SDK_PREFIX=/opt/wasi-sdk-29  RUSTUP_TOOLCHAIN=1.100.0
+#   CC=clang-20  CXX=clang++-20
+#
+#   binaryen 133   wasm-opt that understands wide arithmetic (apt has 105)
+#   wasi-sdk 29    clang 21 and a matching sysroot for wasm32-wasip1
+#   Rust 1.100.0   first release whose 128-bit arithmetic is correct with the
+#                  wide-arithmetic target feature; rustfmt is needed by the
+#                  component bindings generator
+#   clang 20       host compiler, with libstdc++ 13 for <format>
+ARG BINARYEN_VERSION=133
+ARG WASI_SDK_VERSION=29
+ARG RUST_WIDE_ARITHMETIC_TOOLCHAIN=1.100.0
+RUN <<EOT bash
+    set -eux
+    if [ "amd64" = "$TARGETARCH" ]; then
+        export BINARYEN_ARCH=x86_64
+        export WASI_ARCH=x86_64
+    elif [ "arm64" = "$TARGETARCH" ]; then
+        export BINARYEN_ARCH=aarch64
+        export WASI_ARCH=arm64
+    fi
+
+    cd /opt
+    curl -fLO https://github.com/WebAssembly/binaryen/releases/download/version_${BINARYEN_VERSION}/binaryen-version_${BINARYEN_VERSION}-\$BINARYEN_ARCH-linux.tar.gz
+    tar xf binaryen-version_${BINARYEN_VERSION}-\$BINARYEN_ARCH-linux.tar.gz
+    rm binaryen-version_${BINARYEN_VERSION}-\$BINARYEN_ARCH-linux.tar.gz
+    mv binaryen-version_${BINARYEN_VERSION} binaryen-${BINARYEN_VERSION}
+
+    curl -fLO https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK_VERSION}/wasi-sdk-${WASI_SDK_VERSION}.0-\$WASI_ARCH-linux.tar.gz
+    tar xf wasi-sdk-${WASI_SDK_VERSION}.0-\$WASI_ARCH-linux.tar.gz
+    rm wasi-sdk-${WASI_SDK_VERSION}.0-\$WASI_ARCH-linux.tar.gz
+    mv wasi-sdk-${WASI_SDK_VERSION}.0-\$WASI_ARCH-linux wasi-sdk-${WASI_SDK_VERSION}
+
+    /opt/cargo/bin/rustup toolchain install ${RUST_WIDE_ARITHMETIC_TOOLCHAIN} --profile default \
+        --target wasm32-unknown-unknown --target wasm32-wasip1
+    chmod -R 777 /opt/rustup /opt/cargo
+EOT
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+    && add-apt-repository -y ppa:ubuntu-toolchain-r/test \
+    && add-apt-repository -y "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-20 main" \
+    && apt-get update \
+    && apt-get install -yq g++-13 clang-20 lld-20 llvm-20-dev libclang-20-dev \
+    && apt-get clean -yq \
+    && rm -rf /var/lib/apt/lists/*
